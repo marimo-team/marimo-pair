@@ -1,0 +1,45 @@
+# marimo-pair
+
+A [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) for pair programming in [marimo](https://marimo.io) notebooks via MCP.
+
+## What it does
+
+When you're working in a marimo notebook, this skill gives Claude Code a structured protocol for collaborating with you — creating cells, investigating data, building visualizations, and showing its work in the notebook as it goes.
+
+Key behaviors:
+- **Visible collaboration** — Claude shows up in the notebook with a working cell before doing any investigation
+- **Turn-based** — one step at a time, waiting for your input before proceeding
+- **Auto-formatting** — all code is formatted with ruff before being pushed to cells
+- **Guardrails** — never deletes your cells, restarts kernels, or installs packages without asking
+
+## Prerequisites
+
+- A running [marimo](https://marimo.io) notebook
+- The marimo MCP server connected to Claude Code (provides `get_active_notebooks` and `execute_code` tools)
+
+## Install
+
+```bash
+claude skill install /path/to/marimo-pair
+```
+
+Or if published:
+
+```bash
+claude skill install marimo-pair
+```
+
+## Usage
+
+Start a marimo notebook, then talk to Claude Code. The skill activates automatically when it detects an active marimo session.
+
+```
+> let's explore this dataframe
+> make a scatter plot of height vs weight
+> add a dropdown to filter by sport
+```
+
+## Files
+
+- `SKILL.md` — The collaboration protocol (philosophy, turn-based workflow, guardrails)
+- `api-reference.md` — Tiered API recipes for interacting with the marimo kernel
