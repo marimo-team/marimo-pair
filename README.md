@@ -19,15 +19,17 @@ Key behaviors:
 
 ## Install
 
-```bash
-claude skill install /path/to/marimo-pair
-```
-
-Or if published:
+Clone into your Claude Code skills directory:
 
 ```bash
-claude skill install marimo-pair
+# Personal (available across all projects)
+git clone https://github.com/marimo-team/marimo-pair ~/.claude/skills/marimo-pair
+
+# Or project-level (this project only)
+git clone https://github.com/marimo-team/marimo-pair .claude/skills/marimo-pair
 ```
+
+Claude Code automatically discovers skills from these directories — no further configuration needed.
 
 ## Usage
 
