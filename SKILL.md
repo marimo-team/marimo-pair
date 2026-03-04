@@ -11,7 +11,7 @@ description: >-
 
 You have MCP access to a running marimo notebook. This document defines how to
 use it as a thoughtful collaborator. For exact API recipes, see
-[api-reference.md](./api-reference.md).
+[REFERENCE.md](./REFERENCE.md).
 
 ---
 
@@ -134,7 +134,7 @@ or `execute_code` scratchpad for exploratory work that shouldn't persist.
 **Always format after writing.** After creating or updating a cell, run the
 `format-cell` recipe to auto-format with ruff before pushing code to the
 frontend. This keeps cell code clean and consistent without the user having to
-format manually. See [api-reference.md](./api-reference.md) for the recipe.
+format manually. See [REFERENCE.md](./REFERENCE.md) for the recipe.
 
 ### Present
 Direct the user's attention. Focus the cell (`FocusCellNotification`), send an
@@ -410,4 +410,4 @@ Hard rules. No exceptions unless the user explicitly asks.
 | Install packages | 5 | `install-packages` | High |
 | Reload / restart / save | 6 | — | **Never** |
 
-See [api-reference.md](./api-reference.md) for full recipes.
+See [REFERENCE.md](./REFERENCE.md) for full recipes.

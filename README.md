@@ -62,4 +62,4 @@ Start a marimo notebook, then talk to Claude Code. The skill activates automatic
 ## Files
 
 - `SKILL.md` — The collaboration protocol (philosophy, turn-based workflow, guardrails)
-- `api-reference.md` — Tiered API recipes for interacting with the marimo kernel
+- `REFERENCE.md` — Tiered API recipes for interacting with the marimo kernel
