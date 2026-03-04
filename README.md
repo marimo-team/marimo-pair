@@ -1,5 +1,8 @@
 # marimo-pair
 
+> [!WARNING]
+> This is an early-stage, experimental skill for use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Expect rough edges — feedback and contributions welcome.
+
 A [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) for pair programming in [marimo](https://marimo.io) notebooks via MCP.
 
 ## What it does
@@ -30,6 +33,21 @@ git clone https://github.com/marimo-team/marimo-pair .claude/skills/marimo-pair
 ```
 
 Claude Code automatically discovers skills from these directories — no further configuration needed.
+
+## Quick start
+
+```bash
+# Add the marimo MCP server to Claude Code
+claude mcp add --transport http marimo "http://localhost:2718/mcp/server"
+
+# Start marimo in headless code-mode with MCP enabled
+uvx --with="marimo[mcp,recommended]" \
+  marimo edit notebook.py \
+  --mcp="code-mode" \
+  --no-token \
+  --headless \
+  --port 2718
+```
 
 ## Usage
 
