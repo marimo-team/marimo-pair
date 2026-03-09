@@ -71,6 +71,7 @@ frontend, then execute. Get it wrong and the UI desyncs.
 | Need to create/edit/move/delete cells | Follow the scratchpad-to-cell workflow below, then use [cell-operations.md](reference/cell-operations.md) |
 | Unsure what API to use | See **Discovering the API** in [kernel-api.md](reference/kernel-api.md) |
 | Import path fails | See **Discovering the API** in [kernel-api.md](reference/kernel-api.md) |
+| Need a custom visualization or interactive widget | See [rich-representations.md](reference/rich-representations.md) (`_display_()` for display-only, anywidget for bidirectional) |
 | Want a full walkthrough | Read [worked-example.md](reference/worked-example.md) |
 
 ## The Scratchpad-to-Cell Workflow

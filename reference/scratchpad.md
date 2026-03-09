@@ -117,3 +117,6 @@ print(slider.value)
 # Set — updates the widget in the frontend too
 slider.value = 5
 ```
+
+For building custom anywidgets, see
+[rich-representations.md](rich-representations.md).
