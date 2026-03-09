@@ -120,29 +120,18 @@ Ask early — this shapes how you build cells.
 
 ## Guard Rails
 
-NEVER: Reload, restart, shutdown, or save the notebook — these are user-only.
+NEVER: Reload, restart, shutdown, or save the notebook.
 
-NEVER: Write to the notebook `.py` file — no `Edit`, `Write`, `sed`, or any
-file-modification tool. The kernel owns the file; writing behind its back will
-desync state. You MAY read it (via `Read`, `Grep`, etc.) to understand existing
-code and structure.
+NEVER: Write to the `.py` file directly. The kernel owns it — read only.
 
-NEVER: Install packages without confirming with the user first.
+NEVER: Install packages or delete cells without confirmation.
 
-NEVER: Delete user cells without confirmation.
+PREFER: Clear intent → just do it. Ambiguous or destructive → confirm first.
 
-NEVER: Create more than one cell at a time without asking.
+IMPORTANT: Notify the frontend BEFORE executing. See `create-cell` / `edit-cell`.
 
-NEVER: Modify existing user code without proposing the change first.
+IMPORTANT: Format cell code with ruff after writing. See `format-cell`.
 
-IMPORTANT: When creating or updating a cell, notify the frontend BEFORE
-executing. See the `create-cell` and `edit-cell` recipes.
+IMPORTANT: Scratchpad side effects persist. Clean up dry-run registrations.
 
-IMPORTANT: Always format cell code with ruff after writing. See `format-cell`
-in [cell-operations.md](reference/cell-operations.md).
-
-IMPORTANT: The scratchpad shares the kernel's namespace — side effects persist.
-Clean up dry-run registrations (`graph.delete_cell`) to avoid phantom cells.
-
-IMPORTANT: `code_is_stale=True` means the frontend shows code but the kernel
-hasn't run it — use this for drafts the user should review before execution.
+IMPORTANT: `code_is_stale=True` = draft for user review, not yet executed.
