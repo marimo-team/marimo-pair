@@ -118,5 +118,5 @@ print(slider.value)
 slider.value = 5
 ```
 
-For building custom anywidgets, see
-[rich-representations.md](rich-representations.md).
+For building custom anywidgets and making them reactive in downstream cells,
+see [rich-representations.md](rich-representations.md#reactive-anywidgets-in-marimo).

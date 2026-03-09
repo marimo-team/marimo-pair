@@ -76,32 +76,41 @@ frontend, then execute. Get it wrong and the UI desyncs.
 
 ## The Scratchpad-to-Cell Workflow
 
-Always compile-check before creating or editing a cell — it's cheap and catches
-real bugs (syntax errors, broken refs, cycles) before the user sees them.
+**The cardinal rule: never show the user broken code.** Runtime errors in cells
+are a bad experience. Runtime errors in the scratchpad are invisible learning.
 
-For non-trivial code, test in the scratchpad first. The user doesn't see
-scratchpad output, so it's a safe place to iterate. For expensive operations
-(network requests, large queries), test on a subset.
+**Compile-check is not validation.** It catches syntax errors, broken refs, and
+cycles — but tells you nothing about whether the code will actually run. Wrong
+arguments, missing methods, type mismatches — all pass compile-check and blow
+up at runtime. Don't let a passing compile-check give you false confidence.
+
+**ALWAYS compile-check AND test in the scratchpad before creating or editing a
+cell.** No exceptions unless the user explicitly tells you to skip testing.
+Compile-check, then run the code in the scratchpad. Only create or edit the
+cell after both pass. If the code is expensive (slow queries, large network
+requests), test on a subset — or if that's not possible, ask the user.
+
+If both pass, creating or editing the cell is trivial — the validation already
+happened. Do it immediately in the same execute-code call as the test when
+possible. Never pause to ask; the only reason to pause is ambiguous intent,
+not routine cell operations.
 
 ### Adding a new cell
 
-- **Write** your code as a string
-- **Compile-check** — verify syntax, defs, and refs:
-  ```python
-  cell = compile_cell(code, cell_id=CellId_t("test"))
-  print(f"defs={cell.defs}, refs={cell.refs}")
-  ```
-  See `compile-check` in [scratchpad.md](reference/scratchpad.md) for full recipe.
-- **Test in scratchpad** if the code is non-trivial
-- **Create the cell** — follow `create-cell` in [cell-operations.md](reference/cell-operations.md)
+- **Compile-check** — verify syntax, defs, and refs
+- **Test in scratchpad** — ALWAYS run the code to validate it works at runtime.
+  If expensive, test on a subset or ask the user.
+- **Create the cell** — this is just the mechanical step. If the above passed,
+  do it right away. See [cell-operations.md](reference/cell-operations.md).
 
 ### Editing an existing cell
 
 - **Read** the current cell code from the graph
-- **Write** the modified code as a string
 - **Compile-check** — verify the edit doesn't break defs/refs or create cycles
-- **Test in scratchpad** if the change is non-trivial
-- **Update the cell** — follow `edit-cell` in [cell-operations.md](reference/cell-operations.md)
+- **Test in scratchpad** — ALWAYS run the code to validate it works at runtime.
+  If expensive, test on a subset or ask the user.
+- **Update the cell** — this is just the mechanical step. If the above passed,
+  do it right away. See [cell-operations.md](reference/cell-operations.md).
 
 ## Philosophy
 

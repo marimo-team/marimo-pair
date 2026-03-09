@@ -164,7 +164,15 @@ import { tableFromIPC } from "https://esm.sh/@uwdata/flechette@2";
 
 ### DataFrames and binary data
 
-Send DataFrames as Arrow IPC bytes, not JSON. Faster, preserves types.
+**Prefer reducing data on the Python side.** Aggregate, filter, sample —
+send the widget only what it needs. Most widgets should receive a small,
+pre-processed payload via simple traitlets (lists, dicts). This keeps the
+widget simple and avoids extra dependencies.
+
+**For large tabular data (>2k rows)** where the widget genuinely needs
+row-level access, send Arrow IPC bytes instead of JSON. This adds
+complexity and dependencies, so only reach for it when the data volume
+justifies it.
 
 **Python — serialize:**
 
@@ -185,12 +193,34 @@ def to_arrow_ipc(data) -> bytes:
 **JS — deserialize with `@uwdata/flechette`:**
 
 ```js
-import { tableFromIPC } from "https://esm.sh/@uwdata/flechette";
+import { tableFromIPC } from "https://esm.sh/@uwdata/flechette@2";
 const table = tableFromIPC(new Uint8Array(model.get("_ipc").buffer));
 // table.numRows, table.numCols, table.get(i), table.getChild("col_name")
 ```
 
 Use `traitlets.Any().tag(sync=True)` for the IPC bytes traitlet.
+
+## Reactive anywidgets in marimo
+
+When an anywidget trait (selection, value, zoom, etc.) should drive a
+downstream marimo cell, use `mo.state()` + `.observe()` on the **specific
+trait**. This is the common pattern.
+
+```python
+# In the cell that creates the widget:
+get_selection, set_selection = mo.state(widget.selection)
+widget.observe(
+    lambda _: set_selection(widget.selection),
+    names=["selection"],
+)
+
+# In a downstream cell — re-executes when selection changes:
+selection = get_selection()
+```
+
+**`mo.ui.anywidget(widget)`** wraps the *entire* widget and makes *all* synced
+traits reactive. This is rare — only use it when the full widget state should
+drive downstream cells, not just one trait.
 
 ### Scratchpad access
 

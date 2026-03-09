@@ -6,6 +6,7 @@
 # Usage:
 #   execute-code.sh <code>                    # auto-discover single session
 #   execute-code.sh --port 2718 <code>        # target by port
+#   cat script.py | execute-code.sh           # read code from stdin
 set -euo pipefail
 
 port=""
@@ -16,7 +17,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-code="${1:?Usage: execute-code.sh [--port PORT] <code>}"
+if [[ $# -gt 0 ]]; then
+  code="$1"
+elif [[ ! -t 0 ]]; then
+  code=$(cat)
+else
+  echo "Usage: execute-code.sh [--port PORT] <code>" >&2
+  echo "       cat script.py | execute-code.sh" >&2
+  exit 1
+fi
 
 # Locate the sessions directory
 if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
