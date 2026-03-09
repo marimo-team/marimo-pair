@@ -20,6 +20,7 @@ work in a single call, and avoid polluting the kernel namespace.
 - [inspect-variables](#inspect-variables) — kernel globals
 - [compile-check](#compile-check) — syntax + defs/refs without execution
 - [dry-run](#dry-run) — register and check graph impact, then clean up
+- [ui-state](#ui-state) — read and set interactive element values
 
 ## Kernel preamble
 
@@ -90,4 +91,29 @@ cell = compile_cell(code, cell_id=cell_id)
 graph.register_cell(cell_id, cell)
 print(graph.get_multiply_defined(), graph.cycles)
 graph.delete_cell(cell_id)  # ALWAYS clean up
+```
+
+## ui-state
+
+You can read and set the state of interactive elements from the scratchpad.
+This lets you drive the notebook programmatically — set a dropdown value,
+move a slider, enter text — without the user clicking anything.
+
+**marimo UI elements** (`mo.ui.*`):
+
+```python
+from marimo._plugins.ui._impl.input import set_ui_element_value
+
+# Set a UI element's value by its object ID
+set_ui_element_value(element._id, new_value)
+```
+
+**anywidgets** (traitlets are bidirectional — read and write directly):
+
+```python
+# Read
+print(slider.value)
+
+# Set — updates the widget in the frontend too
+slider.value = 5
 ```

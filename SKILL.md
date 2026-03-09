@@ -51,7 +51,9 @@ distinct purposes:
 
 **Scratchpad** (simple): Just Python — `print(df.head())`, check data shapes,
 test a snippet. The notebook's cell variables are already in scope. Results
-come back to you — the user doesn't see them. Use this freely.
+come back to you — the user doesn't see them. You can also read and set UI
+element state programmatically (see [ui-state](reference/scratchpad.md#ui-state)).
+Use this freely.
 
 The kernel preamble in [scratchpad.md](reference/scratchpad.md) has the correct
 entry point and imports for kernel-access code.
