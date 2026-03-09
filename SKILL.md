@@ -53,8 +53,8 @@ distinct purposes:
 test a snippet. The notebook's cell variables are already in scope. Results
 come back to you — the user doesn't see them. Use this freely.
 
-Before writing any kernel-access code, read the **Kernel preamble** in
-[scratchpad.md](reference/scratchpad.md) for the correct entry point and imports.
+The kernel preamble in [scratchpad.md](reference/scratchpad.md) has the correct
+entry point and imports for kernel-access code.
 
 **Cell operations** (complex): Creating, editing, moving, deleting cells.
 These require careful API orchestration — compile, register, notify the
@@ -73,65 +73,62 @@ frontend, then execute. Get it wrong and the UI desyncs.
 
 ## The Scratchpad-to-Cell Workflow
 
-Before adding or editing a cell, always validate in the scratchpad first.
-Compiling and graph-checking are cheap — always do them. Running code catches
-real bugs before the user sees them.
+Always compile-check before creating or editing a cell — it's cheap and catches
+real bugs (syntax errors, broken refs, cycles) before the user sees them.
+
+For non-trivial code, test in the scratchpad first. The user doesn't see
+scratchpad output, so it's a safe place to iterate. For expensive operations
+(network requests, large queries), test on a subset.
 
 ### Adding a new cell
 
-1. **Write** your code as a string
-2. **Compile-check** — verify syntax, defs, and refs (cheap, always do this):
-   ```python
-   cell = compile_cell(code, cell_id=CellId_t("test"))
-   print(f"defs={cell.defs}, refs={cell.refs}")
-   ```
-   See `compile-check` in [scratchpad.md](reference/scratchpad.md) for full recipe.
-3. **Test in scratchpad** — execute the code to confirm it works. If it's expensive (network request, large query), test on a subset (smaller input, LIMIT clause, fewer params)
-4. **If the code contains a network request or query**: consider asking the user before creating the cell, since execution will happen again when the cell runs. Or structure as two cells (fetch + transform) so the fetch only runs once
-5. **Create the cell** — follow `create-cell` in [cell-operations.md](reference/cell-operations.md)
+- **Write** your code as a string
+- **Compile-check** — verify syntax, defs, and refs:
+  ```python
+  cell = compile_cell(code, cell_id=CellId_t("test"))
+  print(f"defs={cell.defs}, refs={cell.refs}")
+  ```
+  See `compile-check` in [scratchpad.md](reference/scratchpad.md) for full recipe.
+- **Test in scratchpad** if the code is non-trivial
+- **Create the cell** — follow `create-cell` in [cell-operations.md](reference/cell-operations.md)
 
 ### Editing an existing cell
 
-1. **Read** the current cell code from the graph
-2. **Write** the modified code as a string
-3. **Compile-check** — verify the edit doesn't break defs/refs or create cycles
-4. **Test in scratchpad** — run the modified code to confirm it works
-5. **Update the cell** — follow `edit-cell` in [cell-operations.md](reference/cell-operations.md)
+- **Read** the current cell code from the graph
+- **Write** the modified code as a string
+- **Compile-check** — verify the edit doesn't break defs/refs or create cycles
+- **Test in scratchpad** if the change is non-trivial
+- **Update the cell** — follow `edit-cell` in [cell-operations.md](reference/cell-operations.md)
 
 ## Philosophy
 
-**You are a collaborator, not a code generator.** You're sitting next to someone
-at their desk. You can see their notebook, run code in it, and talk through
-ideas — but it's *their* notebook.
+You have full access to the running notebook — read state, run code, create and
+edit cells. Read the user's intent and act on it. When the intent is clear,
+go ahead. When it's ambiguous, clarify.
 
-1. **The notebook is the artifact.** Build it *with* the user, not *for* them.
-2. **User steers, you navigate.** They're the domain expert. You handle code.
-3. **Balance visibility.** For a clear, specific ask — just do it. For something
-   vague or exploratory, show options in the UI or suggest approaches in chat.
+## How to Write Good Cells
 
-## App vs Analysis Mode
+- Format with ruff after writing code.
+- Validate before writing to the notebook. If you're uncertain about an API or
+  behavior, test in the scratchpad first — the user doesn't see errors there.
+  For expensive operations (network requests, large queries), test on an
+  equivalent subset.
+- Keep cells small and focused.
+- `code_is_stale=True` sends a draft for user review without executing.
 
-Ask early — this shapes how you build cells.
+## API Contract
 
-- **Analysis mode** (default): linear flow, code-forward, markdown narration,
-  intermediate results visible. Reads like a report.
-- **App mode**: UI elements (`mo.ui.*`), hidden code, layouts (`mo.hstack` /
-  `mo.vstack`). The notebook is an interactive tool.
+Skip these and the UI breaks:
 
-## Guard Rails
+- Notify the frontend before executing cell operations.
+  See `create-cell` / `edit-cell` in [cell-operations.md](reference/cell-operations.md).
+- Compile-check before creating or editing cells.
+- Clean up dry-run registrations — scratchpad side effects persist in the graph.
+- Don't write to the `.py` file directly — the kernel owns it.
 
-NEVER: Reload, restart, shutdown, or save the notebook.
+## User's Environment
 
-NEVER: Write to the `.py` file directly. The kernel owns it — read only.
+Confirm before:
 
-NEVER: Install packages or delete cells without confirmation.
-
-PREFER: Clear intent → just do it. Ambiguous or destructive → confirm first.
-
-IMPORTANT: Notify the frontend BEFORE executing. See `create-cell` / `edit-cell`.
-
-IMPORTANT: Format cell code with ruff after writing. See `format-cell`.
-
-IMPORTANT: Scratchpad side effects persist. Clean up dry-run registrations.
-
-IMPORTANT: `code_is_stale=True` = draft for user review, not yet executed.
+- **Installing packages** — adds dependencies to the project.
+- **Deleting cells** — removes work that may not be recoverable.

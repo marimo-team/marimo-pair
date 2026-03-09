@@ -10,7 +10,7 @@ order wrong and the UI desyncs.
 - [edit-cell](#edit-cell) — update code (draft or immediate)
 - [move-cell](#move-cell) — reorder cells
 - [delete-cell](#delete-cell) — remove a cell
-- [format-cell](#format-cell) — format with ruff (always do this)
+- [format-cell](#format-cell) — format with ruff
 - [install-packages](#install-packages) — add dependencies
 - [cell-config](#cell-config) — hide_code, disabled, etc.
 - [run-stale](#run-stale) — execute all stale cells
@@ -90,7 +90,7 @@ notify(UpdateCellIdsNotification(cell_ids=list(graph.cells.keys())))
 
 ## format-cell
 
-Always format after writing code.
+Format after writing code.
 
 ```python
 from marimo._utils.formatter import DefaultFormatter
@@ -102,7 +102,7 @@ notify(UpdateCellCodesNotification(cell_ids=[cell_id], codes=[formatted[cell_id]
 
 ## install-packages
 
-Always confirm with the user before installing.
+Installing packages modifies the user's environment — confirm first.
 
 ```python
 from marimo._runtime.commands import InstallPackagesCommand
@@ -152,9 +152,9 @@ notify(FocusCellNotification(cell_id=cell_id))
 
 `variant`: `None` (info) or `"danger"` (error). Banner `action`: `None` or `"restart"`.
 
-## Don'ts
+## Common Pitfalls
 
-- **Don't skip `await`** — `kernel.run()` returns a coroutine
-- **Don't send `CellNotification` with empty output after `kernel.run()`** — it clobbers real output
-- **Don't skip notifications before execute** — the kernel runs but the UI won't show the cell
-- **Don't skip formatting** — always run ruff after writing code
+- **Don't skip `await`** — `kernel.run()` returns a coroutine; without `await` nothing executes.
+- **Don't send `CellNotification` with empty output after `kernel.run()`** — it clobbers the real output the kernel just produced.
+- **Don't skip notifications before execute** — the kernel runs the code but the frontend won't know about the cell, so the user sees nothing.
+- **Don't skip formatting** — unformatted code is harder for the user to read and edit.

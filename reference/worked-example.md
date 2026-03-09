@@ -32,17 +32,15 @@ print([m for m in sys.modules if 'plot' in m or 'altair' in m])
 
 Output: `['altair', 'altair.vegalite', ...]`
 
-## Step 2 — Ask in chat
+## Step 2 — Act on clear intent
 
-> "Your `sales` data has date, region, revenue, and units. You already have
-> altair. What kind of plot — line chart of revenue over time? Bar chart by
-> region? Something else?"
-
-User says: "Line chart of revenue over time, colored by region."
+The user said "plot this data." The scratchpad reveals time-series data with a
+region dimension and altair available — a line chart colored by region is the
+natural default. No need to ask; just build it.
 
 ## Step 3 — Write and validate
 
-Compile-check the code (needs the kernel preamble for graph access):
+Compile-check the code (the kernel preamble from scratchpad.md provides graph access):
 
 ```python
 from marimo._runtime.context import get_context
