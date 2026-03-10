@@ -134,7 +134,6 @@ ownership over things you're confident in. If you're not sure, ask.
 
 ## How to Write Good Cells
 
-- Format with ruff after writing code.
 - Validate before writing to the notebook. If you're uncertain about an API or
   behavior, test in the scratchpad first — the user doesn't see errors there.
   For expensive operations (network requests, large queries), test on an

@@ -77,8 +77,9 @@ print(type(chart))  # confirm it built without error
 
 ## Step 4 — Create the cell
 
-Now follow `create-cell` from [cell-operations.md](cell-operations.md) to add
-it to the notebook. Then `format-cell` to clean it up with ruff.
+Use `_code_mode` to insert it into the notebook — see
+[cell-operations.md](cell-operations.md) for how to discover the API.
+Then format with ruff.
 
 The user sees one clean cell appear with the chart rendered. The scratchpad
 investigation and validation happened behind the scenes.

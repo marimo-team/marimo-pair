@@ -1,13 +1,15 @@
 # marimo Kernel API Reference
 
-Entry point for API details. Recipes are split into focused files:
+**`marimo._code_mode` is the primary API for cell operations.** This file
+covers discovering raw kernel commands and notifications — use these only as an
+escape hatch when `_code_mode` doesn't cover your need.
+
+Recipes are split into focused files:
 
 - [scratchpad.md](scratchpad.md) — scratchpad inspection recipes
-- [cell-operations.md](cell-operations.md) — cell mutation recipes
+- [cell-operations.md](cell-operations.md) — cell mutation recipes (uses `_code_mode`)
 
 Each reference file includes its own preamble with the imports you need.
-Use the minimal preamble for scratchpad work; only pull in the full
-cell-mutation imports when you need to create, update, or delete cells.
 
 ## Discovering the API
 
