@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
-# List running marimo sessions from the session registry.
-# Cleans up stale entries (dead PIDs) and outputs live sessions as JSON.
+# List running marimo instances from the server registry.
+# Cleans up stale entries (dead PIDs) and outputs live servers as JSON.
 # No marimo installation required.
 set -euo pipefail
 
-# Locate the sessions directory
+# Locate the servers directory
 if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
-  sessions_dir="$HOME/.marimo/sessions"
+  servers_dir="$HOME/.marimo/servers"
 else
-  sessions_dir="${XDG_STATE_HOME:-$HOME/.local/state}/marimo/sessions"
+  servers_dir="${XDG_STATE_HOME:-$HOME/.local/state}/marimo/servers"
 fi
 
-if [[ ! -d "$sessions_dir" ]]; then
+if [[ ! -d "$servers_dir" ]]; then
   echo "[]"
   exit 0
 fi
 
 results="[]"
-for f in "$sessions_dir"/*.json; do
+for f in "$servers_dir"/*.json; do
   [[ -e "$f" ]] || continue
 
   pid=$(jq -r '.pid' "$f" 2>/dev/null) || continue
@@ -28,7 +28,7 @@ for f in "$sessions_dir"/*.json; do
     continue
   fi
 
-  entry=$(jq 'del(.auth_token)' "$f" 2>/dev/null) || continue
+  entry=$(jq '.' "$f" 2>/dev/null) || continue
   results=$(echo "$results" | jq --argjson e "$entry" '. + [$e]')
 done
 

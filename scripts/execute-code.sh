@@ -27,17 +27,17 @@ else
   exit 1
 fi
 
-# Locate the sessions directory
+# Locate the servers directory
 if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
-  sessions_dir="$HOME/.marimo/sessions"
+  servers_dir="$HOME/.marimo/servers"
 else
-  sessions_dir="${XDG_STATE_HOME:-$HOME/.local/state}/marimo/sessions"
+  servers_dir="${XDG_STATE_HOME:-$HOME/.local/state}/marimo/servers"
 fi
 
 # Find a live registry entry
 entry=""
 count=0
-for f in "$sessions_dir"/*.json; do
+for f in "$servers_dir"/*.json; do
   [[ -e "$f" ]] || continue
 
   pid=$(jq -r '.pid' "$f" 2>/dev/null) || continue
@@ -63,17 +63,17 @@ for f in "$sessions_dir"/*.json; do
 done
 
 if [[ $count -eq 0 ]]; then
-  echo "No running marimo sessions found." >&2
+  echo "No running marimo instances found." >&2
   exit 1
 fi
 
 if [[ $count -gt 1 ]]; then
-  echo "Multiple sessions found. Use --port to specify:" >&2
-  for f in "$sessions_dir"/*.json; do
+  echo "Multiple instances found. Use --port to specify:" >&2
+  for f in "$servers_dir"/*.json; do
     [[ -e "$f" ]] || continue
     pid=$(jq -r '.pid' "$f" 2>/dev/null) || continue
     kill -0 "$pid" 2>/dev/null || continue
-    jq -r '"\(.server_id)  \(.notebook_path // "(multi/new)")"' "$f" >&2
+    jq -r '.server_id' "$f" >&2
   done
   exit 1
 fi
