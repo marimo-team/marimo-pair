@@ -106,26 +106,39 @@ fi
 
 session_id=$(echo "$session_ids" | head -1)
 
-# Execute code
-result=$(curl -sf -X POST "${base}/api/kernel/scratchpad/execute" \
+# Execute code via SSE stream
+# Events: stdout/stderr stream as JSON {"data":"..."}, done is final result.
+exit_code=0
+current_event=""
+while IFS= read -r line; do
+  case "$line" in
+    event:*)
+      current_event="${line#event: }"
+      ;;
+    data:*)
+      payload="${line#data: }"
+      case "$current_event" in
+        stdout)
+          echo "$payload" | jq -jr '.data'
+          ;;
+        stderr)
+          echo "$payload" | jq -jr '.data' >&2
+          ;;
+        done)
+          if echo "$payload" | jq -e '.success == false' >/dev/null 2>&1; then
+            echo "$payload" | jq -r '.error.msg' >&2
+            exit_code=1
+          else
+            echo "$payload" | jq -r '.output.data // empty'
+          fi
+          ;;
+      esac
+      ;;
+  esac
+done < <(curl -sN -X POST "${base}/api/kernel/execute" \
   -H "Content-Type: application/json" \
   -H "Marimo-Session-Id: ${session_id}" \
   -d "$(jq -n --arg c "$code" '{code: $c}')" \
-  --max-time 65) || {
-  echo "Execution request failed." >&2
-  exit 1
-}
+  --max-time 65)
 
-# Print output
-echo "$result" | jq -r '
-  (.stdout // [] | join("")),
-  (.output // empty),
-  (.stderr // [] | join("") | if . != "" then "STDERR: " + . else empty end),
-  (.errors // [] | .[] | "ERROR: " + .),
-  (.error // empty | "ERROR: " + .)
-' 2>/dev/null
-
-# Exit with failure if execution failed
-if echo "$result" | jq -e '.success == false' >/dev/null 2>&1; then
-  exit 1
-fi
+exit "$exit_code"
