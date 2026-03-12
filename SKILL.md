@@ -17,13 +17,15 @@ differs.
 
 ## Prerequisites
 
-The marimo server must be started with token and skew protection disabled:
+The marimo server must be running with token and skew protection disabled:
 
 ```bash
 marimo edit notebook.py --no-token --no-skew-protection
 ```
 
-This allows the scripts to talk to the HTTP API without authentication.
+If no sessions are found when you list sessions, offer to start marimo for the
+user as a background task. Be eager — suggest it proactively rather than
+waiting for them to figure it out. They may also prefer to start it themselves.
 
 ## How to List Sessions and Execute Code
 
@@ -52,10 +54,10 @@ distinct purposes:
 **Scratchpad** (simple): Just Python — `print(df.head())`, check data shapes,
 test a snippet. The notebook's cell variables are already in scope. Results
 come back to you — the user doesn't see them. You can also read and set UI
-element state programmatically (see [ui-state](reference/scratchpad.md#ui-state)).
+element state programmatically (see [ui-state](reference/execute-code.md#ui-state)).
 Use this freely.
 
-The kernel preamble in [scratchpad.md](reference/scratchpad.md) has the correct
+The kernel preamble in [execute-code.md](reference/execute-code.md) has the correct
 entry point and imports for kernel-access code.
 
 **Cell operations** (complex): Creating, editing, moving, deleting cells.
@@ -67,14 +69,13 @@ frontend, then execute. Get it wrong and the UI desyncs.
 | Situation | Action |
 |-----------|--------|
 | Need to find running sessions | List sessions |
-| Need to read data/state | Use recipes in [scratchpad.md](reference/scratchpad.md) via execute code |
-| Need to create/edit/move/delete cells | Follow the scratchpad-to-cell workflow below, then use [cell-operations.md](reference/cell-operations.md) |
-| Unsure what API to use | See **Discovering the API** in [kernel-api.md](reference/kernel-api.md) |
-| Import path fails | See **Discovering the API** in [kernel-api.md](reference/kernel-api.md) |
+| Need to read data/state | Use scratchpad recipes in [execute-code.md](reference/execute-code.md) |
+| Need to create/edit/move/delete cells | Follow the scratchpad-to-cell workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
+| Unsure what API to use | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
+| Import path fails | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
 | Need a custom visualization or interactive widget | See [rich-representations.md](reference/rich-representations.md) (`_display_()` for display-only, anywidget for bidirectional) |
 | Widget trait should drive downstream cells | `mo.state()` + `.observe()` — see [Reactive anywidgets](reference/rich-representations.md#reactive-anywidgets-in-marimo) |
-| Need to display a notification to the user (toast, banner, focus) | See [notify-user](reference/cell-operations.md#notify-user) in cell-operations |
-| Want a full walkthrough | Read [worked-example.md](reference/worked-example.md) |
+| Need to display a notification to the user (toast, banner, focus) | See [other operations](reference/execute-code.md#other-operations) |
 
 ## The Scratchpad-to-Cell Workflow
 
@@ -104,7 +105,7 @@ not routine cell operations.
 - **Test in scratchpad** — ALWAYS run the code to validate it works at runtime.
   If expensive, test on a subset or ask the user.
 - **Create the cell** — this is just the mechanical step. If the above passed,
-  do it right away. See [cell-operations.md](reference/cell-operations.md).
+  do it right away. See [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
 
 ### Editing an existing cell
 
@@ -113,7 +114,7 @@ not routine cell operations.
 - **Test in scratchpad** — ALWAYS run the code to validate it works at runtime.
   If expensive, test on a subset or ask the user.
 - **Update the cell** — this is just the mechanical step. If the above passed,
-  do it right away. See [cell-operations.md](reference/cell-operations.md).
+  do it right away. See [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
 
 ## Philosophy
 
@@ -146,7 +147,7 @@ ownership over things you're confident in. If you're not sure, ask.
 Skip these and the UI breaks:
 
 - Notify the frontend before executing cell operations.
-  See `create-cell` / `edit-cell` in [cell-operations.md](reference/cell-operations.md).
+  Use `_code_mode` — see [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
 - Compile-check before creating or editing cells.
 - Clean up dry-run registrations — scratchpad side effects persist in the graph.
 - Don't write to the `.py` file directly — the kernel owns it.

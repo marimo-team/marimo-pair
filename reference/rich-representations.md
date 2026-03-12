@@ -234,7 +234,7 @@ print(timer.seconds)    # read
 timer.seconds = 0       # set — frontend updates automatically
 ```
 
-See [ui-state](scratchpad.md#ui-state). `mo.ui.*` elements need
+See [ui-state](execute-code.md#ui-state). `mo.ui.*` elements need
 `set_ui_element_value`; anywidgets use direct assignment.
 
 ## Minimize CLS (Cumulative Layout Shift)
