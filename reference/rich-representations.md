@@ -68,6 +68,18 @@ traitlets. `.tag(sync=True)` makes a traitlet bidirectional — Python sets a
 value → JS sees it; JS calls `model.set()` + `model.save_changes()` →
 Python sees it. `_css` is optional global CSS.
 
+**Widget display check:** When testing a widget in the scratchpad, verify
+marimo can render it before creating the cell:
+
+```python
+from marimo._output.formatting import try_format
+result = try_format(obj)
+print(result.mimetype)  # "text/html" is good; "application/vnd.jupyter.widget-view+json" won't render
+```
+
+If the mimetype indicates an unsupported widget, look for an underlying
+`.widget` attribute or another accessor that returns a supported object.
+
 ### `_esm` lifecycle
 
 **Render only** (most widgets):
@@ -207,7 +219,7 @@ Use `traitlets.Any().tag(sync=True)` for the IPC bytes traitlet.
 
 When an anywidget trait (selection, value, zoom, etc.) should drive a
 downstream marimo cell, use `mo.state()` + `.observe()` on the **specific
-trait**. This is the common pattern.
+trait**. This is the preferred pattern:
 
 ```python
 # In the cell that creates the widget:
@@ -220,6 +232,10 @@ widget.observe(
 # In a downstream cell — re-executes when selection changes:
 selection = get_selection()
 ```
+
+Initialize `mo.state()` with the widget's current trait value — not a
+hardcoded default. Read the trait directly off the widget in the lambda.
+Do **not** use `change["new"]` or `allow_self_loops=True`.
 
 **`mo.ui.anywidget(widget)`** wraps the *entire* widget and makes *all* synced
 traits reactive. This is rare — only use it when the full widget state should
