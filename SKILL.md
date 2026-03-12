@@ -23,19 +23,19 @@ The marimo server must be running with token and skew protection disabled:
 marimo edit notebook.py --no-token --no-skew-protection
 ```
 
-If no sessions are found when you list sessions, offer to start marimo for the
+If no servers are found when you discover servers, offer to start marimo for the
 user as a background task. Be eager — suggest it proactively rather than
 waiting for them to figure it out. They may also prefer to start it themselves.
 
-## How to List Sessions and Execute Code
+## How to Discover Servers and Execute Code
 
-There are two operations: **list sessions** and **execute code**. Use the
+There are two operations: **discover servers** and **execute code**. Use the
 bundled scripts — they talk directly to the marimo HTTP API with no
 dependencies beyond `bash`, `curl`, and `jq`.
 
 | Operation | Script | MCP |
 |-----------|--------|-----|
-| List sessions | `bash scripts/list-sessions.sh` | `list_sessions()` tool |
+| Discover servers | `bash scripts/discover-servers.sh` | `list_sessions()` tool |
 | Execute code | `bash scripts/execute-code.sh "code"` | `execute_code(code=..., session_id=...)` tool |
 
 The scripts auto-discover sessions from the registry on disk. Use `--port`
@@ -44,7 +44,7 @@ to target a specific server when multiple are running.
 If the marimo server was started with `--mcp`, you'll have MCP tools
 available as an alternative.
 
-The rest of this skill refers to "list sessions" and "execute code" generically.
+The rest of this skill refers to "discover servers" and "execute code" generically.
 
 ## Two Modes of Working
 
@@ -68,7 +68,7 @@ frontend, then execute. Get it wrong and the UI desyncs.
 
 | Situation | Action |
 |-----------|--------|
-| Need to find running sessions | List sessions |
+| Need to find running servers | Discover servers |
 | Need to read data/state | Use scratchpad recipes in [execute-code.md](reference/execute-code.md) |
 | Need to create/edit/move/delete cells | Follow the scratchpad-to-cell workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
 | Unsure what API to use | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
