@@ -28,11 +28,11 @@ and views. Don't over-engineer.
 
 | Need | Approach |
 |------|----------|
-| Custom view, explorer, panel, gallery, or any bespoke UI | **anywidget** — always the default for custom work |
-| Display-only rich output (no interaction needed) | `_display_()` or `mo.Html` for one-off static HTML |
+| Default for any custom output | **anywidget** — even display-only; you get layout control and can add interaction later |
+| Trivial one-off static HTML | `_display_()` or `mo.Html` — only when an anywidget is truly overkill |
 | Single built-in control used as-is (slider, dropdown) | `mo.ui.*` |
 
-When in doubt, build an anywidget. Small upfront cost, full control.
+When in doubt, build an anywidget.
 
 ## `_display_()` protocol
 
@@ -237,76 +237,8 @@ timer.seconds = 0       # set — frontend updates automatically
 See [ui-state](scratchpad.md#ui-state). `mo.ui.*` elements need
 `set_ui_element_value`; anywidgets use direct assignment.
 
-## Skeleton / empty state
+## Minimize CLS (Cumulative Layout Shift)
 
-Render an animated placeholder when items are empty — avoids blank flash and
-layout shift. Put this at the top of `render()`'s draw function, before the
-real content path.
+Use `min-height` or `aspect-ratio` on the outer container so the widget
+reserves space before content loads or when toggling between states.
 
-```js
-// shimmer keyframe — add to _css
-// @keyframes shimmer { to { background-position: -200% 0; } }
-
-function skeleton(el, n = 3) {
-  el.innerHTML = Array.from({ length: n }, () =>
-    `<div style="height:48px;border-radius:8px;margin-bottom:8px;
-      background:linear-gradient(90deg,#e0e0e0 25%,#f0f0f0 50%,#e0e0e0 75%);
-      background-size:200% 100%;animation:shimmer 1.5s infinite"></div>`
-  ).join("");
-}
-```
-
-## Selection widget scaffold
-
-Core pattern: `items` list + `selected_index` int, skeleton when empty,
-click handler, `model.on("change:…", draw)`.
-
-```python
-import anywidget, traitlets
-
-class SelectionWidget(anywidget.AnyWidget):
-    items = traitlets.List([]).tag(sync=True)
-    selected_index = traitlets.Int(-1).tag(sync=True)
-
-    _css = """
-    @keyframes shimmer { to { background-position: -200% 0; } }
-    .sel-item { padding:8px 12px; border-radius:6px; cursor:pointer; }
-    .sel-item:hover { background:#f0f0f0; }
-    .sel-item[aria-selected="true"] { background:#e0edff; font-weight:600; }
-    .sel-skeleton { height:40px; border-radius:6px; margin-bottom:6px;
-      background:linear-gradient(90deg,#e0e0e0 25%,#f0f0f0 50%,#e0e0e0 75%);
-      background-size:200% 100%; animation:shimmer 1.5s infinite; }
-    """
-
-    _esm = """
-    function render({ model, el }) {
-      function draw() {
-        const items = model.get("items");
-        if (!items.length) {
-          el.innerHTML = Array.from({ length: 3 },
-            () => `<div class="sel-skeleton"></div>`).join("");
-          return;
-        }
-        const sel = model.get("selected_index");
-        el.innerHTML = items.map((item, i) =>
-          `<div class="sel-item" data-i="${i}"
-               aria-selected="${i === sel}">${item}</div>`
-        ).join("");
-      }
-
-      el.addEventListener("click", (e) => {
-        const row = e.target.closest("[data-i]");
-        if (!row) return;
-        model.set("selected_index", +row.dataset.i);
-        model.save_changes();
-      });
-
-      model.on("change:items", draw);
-      model.on("change:selected_index", draw);
-      draw();
-    }
-    export default { render };
-    """
-```
-
-Extend with pagination, search, richer item rendering as needed.
