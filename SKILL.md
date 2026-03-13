@@ -104,6 +104,7 @@ frontend, then execute. Get it wrong and the UI desyncs.
 | Need to find running servers | Discover servers |
 | Need to read data/state | Use scratchpad recipes in [execute-code.md](reference/execute-code.md) |
 | Need to create/edit/move/delete cells | Follow the scratchpad-to-cell workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
+| Need to install a package | Use the `code_mode` context — see [Installing Packages](#installing-packages) |
 | Unsure what API to use | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
 | Import path fails | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
 | Need a custom visualization or interactive widget | See [rich-representations.md](reference/rich-representations.md) (`_display_()` for display-only, anywidget for bidirectional) |
@@ -185,9 +186,21 @@ Skip these and the UI breaks:
 - Clean up dry-run registrations — scratchpad side effects persist in the graph.
 - Don't write to the `.py` file directly — the kernel owns it.
 
+## Installing Packages
+
+The `code_mode` context exposes package installation capabilities. Explore
+`dir(ctx)` and `help()` to find the right method — don't guess the API, as it
+may change across marimo versions.
+
+Always try the code API first. Only fall back to external CLIs (`uv add`,
+`uv pip install`, etc.) if the API is unavailable or fails.
+
+Confirm with the user before installing — this adds dependencies to their
+project.
+
 ## User's Environment
 
 Confirm before:
 
-- **Installing packages** — adds dependencies to the project.
+- **Installing packages** — adds dependencies (see above).
 - **Deleting cells** — removes work that may not be recoverable.
