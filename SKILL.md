@@ -59,6 +59,22 @@ available as an alternative.
 
 The rest of this skill refers to "discover servers" and "execute code" generically.
 
+## First Step: Explore the code_mode Context
+
+The `code_mode` API can change between marimo versions. Before doing any real
+work in a session, your **first execute-code call** should discover what the
+running server actually provides:
+
+```python
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    print(dir(ctx))
+    help(ctx)
+```
+
+Orient yourself before acting.
+
 ## Two Modes of Working
 
 Executing code is your only way to interact with the notebook. It serves two
