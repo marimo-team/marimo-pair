@@ -113,62 +113,6 @@ see [rich-representations.md](rich-representations.md#reactive-anywidgets-in-mar
 
 ## Cell operations — mutating the notebook
 
-Cell operations live in `marimo._code_mode`. The module exposes a context
-object and an edit system — you apply edits to the notebook through the context.
-
-```python
-import marimo._code_mode as cm
-
-ctx = cm.get_context()
-```
-
-On first use, discover the API surface:
-
-```python
-print([x for x in dir(cm) if not x.startswith('_')])
-print([x for x in dir(ctx) if not x.startswith('_')])
-```
-
-Drill into classes and methods with `dir()` and `help()`. They are the source
-of truth, not this file.
-
-### Common edits
-
-- **Insert cells** at a position
-- **Edit a cell's** code or config (supports drafts for user review)
-- **Delete cells** by index range
-- **Move a cell** — delete + insert (no dedicated primitive)
-
-### Other operations
-
-The context also provides ways to:
-
-- **Execute stale cells**
-- **Install packages** (confirm with user first)
-- **Notify the user** (toast, banner, focus a cell)
-
-### Pitfalls
-
-- **Must `await` edit calls** — forgetting `await` silently does nothing.
-- **Cell handles come from the context** — you can't construct one manually.
-- **Don't write to the `.py` file directly** — the kernel owns it.
-
-## Discovering the API
-
-If an import fails or you need something not listed above, explore:
-
-```python
-import marimo
-print(marimo.__file__)       # browse the source with your file tools
-print(marimo.__version__)    # import paths change across releases
-
-# List all kernel commands
-import marimo._runtime.commands as commands
-print([c for c in dir(commands) if c.endswith("Command")])
-
-# List all frontend notifications
-import marimo._messaging.notification as notification
-print([n for n in dir(notification) if n.endswith("Notification")])
-```
-
-Use this to verify import paths and discover new APIs rather than guessing.
+Cell operations live in `marimo._code_mode`. The module is self-documenting —
+use `dir(ctx)` and `help()` to explore. **You MUST use `async with`** (see
+top of SKILL.md).

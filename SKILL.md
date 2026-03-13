@@ -8,6 +8,19 @@ description: >-
   outside of marimo or for marimo plugin/package development.
 ---
 
+> **Notebook metaprogramming** lives in `marimo._code_mode`. You **MUST** use
+> `async with` — without it, operations silently do nothing.
+>
+> ```python
+> import marimo._code_mode as cm
+>
+> async with cm.get_context() as ctx:
+>     for c in ctx.cells:
+>         print(c.cell_id, c.code[:80])
+> ```
+>
+> Explore the API with `dir(ctx)` and `help()` at the start of each session.
+
 # marimo Pair Programming Protocol
 
 You can interact with a running marimo notebook via **bundled scripts** or
