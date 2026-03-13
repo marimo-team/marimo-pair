@@ -36,6 +36,10 @@ The marimo server must be running with token and skew protection disabled:
 marimo edit notebook.py --no-token --no-skew-protection
 ```
 
+If you start the server, consider whether the user wants to see the notebook.
+By default, omit `--headless` so marimo auto-opens the browser. If you use
+`--headless`, offer to open it with `open http://localhost:<port>`.
+
 If no servers are found when you discover servers, offer to start marimo for the
 user as a background task. Be eager — suggest it proactively rather than
 waiting for them to figure it out. They may also prefer to start it themselves.
