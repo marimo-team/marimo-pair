@@ -24,9 +24,8 @@ description: >-
 # marimo Pair Programming Protocol
 
 You can interact with a running marimo notebook via **bundled scripts** or
-**MCP**. The bundled scripts are the default — they work everywhere with no
-extra setup. The workflow is identical either way; only the execution method
-differs.
+**MCP**. Bundled scripts are the default — they work everywhere with no extra
+setup. The workflow is identical either way; only the execution method differs.
 
 ## Prerequisites
 
@@ -36,38 +35,29 @@ The marimo server must be running with token and skew protection disabled:
 marimo edit notebook.py --no-token --no-skew-protection
 ```
 
-If you start the server, consider whether the user wants to see the notebook.
 By default, omit `--headless` so marimo auto-opens the browser. If you use
 `--headless`, offer to open it with `open http://localhost:<port>`.
 
-If no servers are found when you discover servers, offer to start marimo for the
-user as a background task. Be eager — suggest it proactively rather than
-waiting for them to figure it out. They may also prefer to start it themselves.
+If no servers are found, offer to start marimo as a background task. Be
+eager — suggest it proactively. The user may also prefer to start it themselves.
 
 ## How to Discover Servers and Execute Code
 
-There are two operations: **discover servers** and **execute code**. Use the
-bundled scripts — they talk directly to the marimo HTTP API with no
-dependencies beyond `bash`, `curl`, and `jq`.
+Two operations: **discover servers** and **execute code**.
 
 | Operation | Script | MCP |
 |-----------|--------|-----|
 | Discover servers | `bash scripts/discover-servers.sh` | `list_sessions()` tool |
 | Execute code | `bash scripts/execute-code.sh "code"` | `execute_code(code=..., session_id=...)` tool |
 
-The scripts auto-discover sessions from the registry on disk. Use `--port`
-to target a specific server when multiple are running.
-
-If the marimo server was started with `--mcp`, you'll have MCP tools
-available as an alternative.
-
-The rest of this skill refers to "discover servers" and "execute code" generically.
+Scripts auto-discover sessions from the registry on disk. Use `--port` to
+target a specific server when multiple are running. If the server was started
+with `--mcp`, you'll have MCP tools available as an alternative.
 
 ## First Step: Explore the code_mode Context
 
-The `code_mode` API can change between marimo versions. Before doing any real
-work in a session, your **first execute-code call** should discover what the
-running server actually provides:
+The `code_mode` API can change between marimo versions. Your **first
+execute-code call** should discover what the running server actually provides:
 
 ```python
 import marimo._code_mode as cm
@@ -77,21 +67,14 @@ async with cm.get_context() as ctx:
     help(ctx)
 ```
 
-Orient yourself before acting.
-
 ## Two Modes of Working
 
-Executing code is your only way to interact with the notebook. It serves two
-distinct purposes:
-
 **Scratchpad** (simple): Just Python — `print(df.head())`, check data shapes,
-test a snippet. The notebook's cell variables are already in scope. Results
-come back to you — the user doesn't see them. You can also read and set UI
-element state programmatically (see [ui-state](reference/execute-code.md#ui-state)).
-Use this freely.
-
-The kernel preamble in [execute-code.md](reference/execute-code.md) has the correct
-entry point and imports for kernel-access code.
+test a snippet. Cell variables are already in scope. Results come back to
+you — the user doesn't see them. You can also read and set UI element state
+programmatically (see [ui-state](reference/execute-code.md#ui-state)). The
+kernel preamble in [execute-code.md](reference/execute-code.md) has the correct
+entry point and imports.
 
 **Cell operations** (complex): Creating, editing, moving, deleting cells.
 These require careful API orchestration — compile, register, notify the
@@ -117,74 +100,40 @@ frontend, then execute. Get it wrong and the UI desyncs.
 are a bad experience. Runtime errors in the scratchpad are invisible learning.
 
 **Compile-check is not validation.** It catches syntax errors, broken refs, and
-cycles — but tells you nothing about whether the code will actually run. Wrong
-arguments, missing methods, type mismatches — all pass compile-check and blow
-up at runtime. Don't let a passing compile-check give you false confidence.
+cycles — but not wrong arguments, missing methods, or type mismatches. Don't
+let a passing compile-check give you false confidence.
 
 **ALWAYS compile-check AND test in the scratchpad before creating or editing a
-cell.** No exceptions unless the user explicitly tells you to skip testing.
-Compile-check, then run the code in the scratchpad. Only create or edit the
-cell after both pass. If the code is expensive (slow queries, large network
-requests), test on a subset — or if that's not possible, ask the user.
+cell.** No exceptions unless the user explicitly says to skip testing. If the
+code is expensive, test on a subset — or if that's not possible, ask the user.
 
-If both pass, creating or editing the cell is trivial — the validation already
-happened. Do it immediately in the same execute-code call as the test when
-possible. Never pause to ask; the only reason to pause is ambiguous intent,
-not routine cell operations.
+If both pass, do the cell operation immediately — in the same execute-code call
+when possible. Never pause to ask; the only reason to pause is ambiguous intent.
 
-### Adding a new cell
+### Steps (same for add or edit)
 
-- **Compile-check** — verify syntax, defs, and refs. Check new cell's `defs`
-  against existing cells — duplicate defs break the graph.
-- **Test in scratchpad** — ALWAYS run the code to validate it works at runtime.
-  If expensive, test on a subset or ask the user.
-- **Create the cell** — this is just the mechanical step. If the above passed,
-  do it right away. See [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
+1. If editing, **read** the current cell code from the graph
+2. **Compile-check** — verify syntax, defs, refs, no cycles. For new cells,
+   check `defs` against existing cells — duplicate defs break the graph.
+3. **Test in scratchpad** — run the code to validate at runtime
+4. **Create or update the cell** — the mechanical step. See
+   [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
 
-### Editing an existing cell
-
-- **Read** the current cell code from the graph
-- **Compile-check** — verify the edit doesn't break defs/refs or create cycles
-- **Test in scratchpad** — ALWAYS run the code to validate it works at runtime.
-  If expensive, test on a subset or ask the user.
-- **Update the cell** — this is just the mechanical step. If the above passed,
-  do it right away. See [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
+Keep cells small and focused. Use `code_is_stale=True` to send a draft for
+user review without executing.
 
 ## Philosophy
 
-You have full access to the running notebook — read state, run code, create and
-edit cells. Read the user's intent and act on it. When the intent is clear,
-go ahead. When it's ambiguous, clarify.
+You have full access to the running notebook. When the user's intent is clear,
+act on it. When it's ambiguous, clarify.
 
-Data work has a lot of implicit context — preferred libraries, naming
-conventions, data sources, domain assumptions, how they like results presented.
-Acting without understanding this context wastes effort and doesn't serve the
-user. Acting aligned with it is high-impact.
+Before reaching for external tools or CLIs, explore what `ctx` and marimo
+already provide — marimo has integrations for many common operations (e.g.,
+installing packages). Use `dir(ctx)` and `help()` to discover capabilities.
 
-You're running in the user's environment. Before making choices, look for
-signal — notebook imports, `pyproject.toml`, `sys.modules`, existing cells,
-project files, directory structure. If you find a pattern, follow it. If
-there's little signal, be resourceful and try to find it. Take agency and
-ownership over things you're confident in. If you're not sure, ask.
-
-## How to Write Good Cells
-
-- Validate before writing to the notebook. If you're uncertain about an API or
-  behavior, test in the scratchpad first — the user doesn't see errors there.
-  For expensive operations (network requests, large queries), test on an
-  equivalent subset.
-- Keep cells small and focused.
-- `code_is_stale=True` sends a draft for user review without executing.
-
-## API Contract
-
-Skip these and the UI breaks:
-
-- Notify the frontend before executing cell operations.
-  Use `_code_mode` — see [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
-- Compile-check before creating or editing cells.
-- Clean up dry-run registrations — scratchpad side effects persist in the graph.
-- Don't write to the `.py` file directly — the kernel owns it.
+Before making choices, look for signal — notebook imports, `pyproject.toml`,
+`sys.modules`, existing cells, directory structure. Follow existing patterns.
+Take agency over things you're confident in. If you're not sure, ask.
 
 ## Installing Packages
 
@@ -195,12 +144,16 @@ may change across marimo versions.
 Always try the code API first. Only fall back to external CLIs (`uv add`,
 `uv pip install`, etc.) if the API is unavailable or fails.
 
-Confirm with the user before installing — this adds dependencies to their
-project.
+## Guard Rails
 
-## User's Environment
+Skip these and the UI breaks:
 
-Confirm before:
+- Notify the frontend before executing cell operations — use `_code_mode`.
+- Compile-check before creating or editing cells.
+- Clean up dry-run registrations — scratchpad side effects persist in the graph.
+- Don't write to the `.py` file directly — the kernel owns it.
 
-- **Installing packages** — adds dependencies (see above).
+Confirm with the user before:
+
+- **Installing packages** — adds dependencies to their project.
 - **Deleting cells** — removes work that may not be recoverable.
