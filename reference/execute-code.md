@@ -101,6 +101,6 @@ import marimo._code_mode as cm
 async with cm.get_context() as ctx:
     cid = ctx.create_cell("x = 1")
     ctx.create_cell("y = x + 1", after=cid)
-    ctx.update_cell("my_cell", code="z = 42")
+    ctx.edit_cell("my_cell", code="z = 42")
     ctx.delete_cell("old_cell")
 ```
