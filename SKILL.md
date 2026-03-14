@@ -163,6 +163,12 @@ Always try the code API first. Only fall back to external CLIs (`uv add`,
 
 Skip these and the UI breaks:
 
+- **Custom widget = anywidget.** When the user asks for a "custom widget",
+  "custom view", or any bespoke visual component, build an anywidget with
+  HTML/CSS/JS — do NOT compose `mo.ui` elements. Composed `mo.ui` is fine
+  for simple forms and controls, but anywidget gives full layout control,
+  avoids same-cell value constraints, and is what the user expects when they
+  say "custom". See [rich-representations.md](reference/rich-representations.md).
 - Notify the frontend before executing cell operations — use `_code_mode`.
 - The `async with` context manager auto-compile-checks — if it rejects, fix and retry.
 - Clean up dry-run registrations — scratchpad side effects persist in the graph.

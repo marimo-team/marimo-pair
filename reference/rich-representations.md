@@ -34,33 +34,6 @@ and views. Don't over-engineer.
 
 When in doubt, build an anywidget.
 
-## `_display_()` protocol
-
-Any object with a `_display_()` method renders richly in marimo. Return
-anything marimo can render — `mo.Html`, `mo.md()`, a chart, a string.
-
-Precedence: `_display_()` > built-in formatters > `_mime_()` > IPython
-`_repr_*_()` methods.
-
-```python
-from dataclasses import dataclass
-import marimo as mo
-
-@dataclass
-class ColorSwatch:
-    colors: list[str]
-
-    def _display_(self):
-        divs = "".join(
-            f'<div style="width:40px;height:40px;background:{c};border-radius:4px;"></div>'
-            for c in self.colors
-        )
-        return mo.Html(f'<div style="display:flex;gap:8px;">{divs}</div>')
-```
-
-For inline `<script>` tags, use `document.currentScript.previousElementSibling`
-to scope to the element — never hardcode IDs (breaks with multiple instances).
-
 ## anywidget
 
 [anywidget](https://anywidget.dev) bridges Python and JavaScript via
@@ -169,6 +142,33 @@ class Timer(anywidget.AnyWidget):
     _esm = _TIMER_ESM
 ```
 
+### Composing with the notebook
+
+Widgets become reactive notebook citizens when you bridge a traitlet to
+`mo.state`. This is a two-cell pattern — create the widget and wire up the
+observer in one cell, read the value in another:
+
+```python
+# Cell 1 — widget + observer
+timer = Timer()
+
+get_seconds, set_seconds = mo.state(timer.seconds)
+timer.observe(lambda _: set_seconds(timer.seconds), names=["seconds"])
+
+timer  # display the widget
+```
+
+```python
+# Cell 2 — reacts to changes
+seconds = get_seconds()
+mo.md(f"Timer is at **{seconds}s** — {'running' if seconds > 0 else 'stopped'}")
+```
+
+This pattern is always the same: `mo.state(widget.trait)` for the initial
+value, `.observe()` on the specific trait name, read with the getter in a
+downstream cell. See [Reactive anywidgets](#reactive-anywidgets-in-marimo)
+for the full rules.
+
 ### CDN dependencies
 
 Import JS libraries from [esm.sh](https://esm.sh) — no build step:
@@ -254,8 +254,34 @@ timer.seconds = 0       # set — frontend updates automatically
 See [ui-state](execute-code.md#ui-state). `mo.ui.*` elements need
 `set_ui_element_value`; anywidgets use direct assignment.
 
+## `_display_()` protocol
+
+Any object with a `_display_()` method renders richly in marimo. Return
+anything marimo can render — `mo.Html`, `mo.md()`, a chart, a string.
+
+Precedence: `_display_()` > built-in formatters > `_mime_()` > IPython
+`_repr_*_()` methods.
+
+```python
+from dataclasses import dataclass
+import marimo as mo
+
+@dataclass
+class ColorSwatch:
+    colors: list[str]
+
+    def _display_(self):
+        divs = "".join(
+            f'<div style="width:40px;height:40px;background:{c};border-radius:4px;"></div>'
+            for c in self.colors
+        )
+        return mo.Html(f'<div style="display:flex;gap:8px;">{divs}</div>')
+```
+
+For inline `<script>` tags, use `document.currentScript.previousElementSibling`
+to scope to the element — never hardcode IDs (breaks with multiple instances).
+
 ## Minimize CLS (Cumulative Layout Shift)
 
 Use `min-height` or `aspect-ratio` on the outer container so the widget
 reserves space before content loads or when toggling between states.
-
