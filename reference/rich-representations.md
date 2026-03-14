@@ -41,17 +41,27 @@ traitlets. `.tag(sync=True)` makes a traitlet bidirectional — Python sets a
 value → JS sees it; JS calls `model.set()` + `model.save_changes()` →
 Python sees it. `_css` is optional global CSS.
 
-**Widget display check:** When testing a widget in the scratchpad, verify
-marimo can render it before creating the cell:
+**marimo does not render traditional Jupyter widgets.** Libraries like jscatter,
+ipyvolume, etc. often have a top-level object whose default representation is a
+Jupyter widget (`application/vnd.jupyter.widget-view+json`). marimo cannot
+display these — you need to find the underlying **anywidget** instance, which
+marimo *does* support.
+
+Common pattern: look for a `.widget` attribute on the library object:
 
 ```python
-from marimo._output.formatting import try_format
-result = try_format(obj)
-print(result.mimetype)  # "text/html" is good; "application/vnd.jupyter.widget-view+json" won't render
+# jscatter example — Scatter is not renderable, but .widget is an anywidget
+scatter = jscatter.Scatter(data=df, x="x", y="y")
+scatter.widget  # <-- use this in the cell output
 ```
 
-If the mimetype indicates an unsupported widget, look for an underlying
-`.widget` attribute or another accessor that returns a supported object.
+When unsure, check in the scratchpad:
+
+```python
+import anywidget
+obj = scatter.widget  # or whatever accessor the library provides
+print(isinstance(obj, anywidget.AnyWidget))  # True = marimo can render it
+```
 
 ### `_esm` lifecycle
 

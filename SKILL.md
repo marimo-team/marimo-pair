@@ -64,6 +64,21 @@ modules), write the code to a temp file with the Write tool first, then pass
 the file path as a positional argument. This avoids shell escaping issues
 entirely.
 
+**Separate JS from Python for anywidgets.** When creating cells with `_esm`
+strings, write the ESM JavaScript to its own temp file and read it in the
+Python code. This avoids nested string quoting (`"""` inside `'''` inside
+heredocs) which causes subtle escaping bugs:
+
+```python
+# Write JS to /tmp/widget.js (plain JS, no escaping needed)
+# Then in the cell code:
+import pathlib
+_ESM = pathlib.Path("/tmp/widget.js").read_text()
+```
+
+Once the cell is saved to the notebook, the ESM is embedded in the cell
+source — the temp file is not needed at runtime.
+
 ## First Step: Explore the code_mode Context
 
 The `code_mode` API can change between marimo versions. Your **first
