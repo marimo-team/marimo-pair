@@ -99,8 +99,13 @@ caught before any graph mutations occur.
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = 1")
-    ctx.create_cell("y = x + 1", after=cid)
+    # Appends to end by default
+    ctx.create_cell("x = 1")
+    ctx.create_cell("y = x + 1")
+
+    # Use before/after only when position matters
+    # ctx.create_cell("setup()", before="my_cell")
+
     ctx.edit_cell("my_cell", code="z = 42")
     ctx.delete_cell("old_cell")
 ```
