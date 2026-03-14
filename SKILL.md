@@ -64,20 +64,8 @@ modules), write the code to a temp file with the Write tool first, then pass
 the file path as a positional argument. This avoids shell escaping issues
 entirely.
 
-**Separate JS from Python for anywidgets.** When creating cells with `_esm`
-strings, write the ESM JavaScript to its own temp file and read it in the
-Python code. This avoids nested string quoting (`"""` inside `'''` inside
-heredocs) which causes subtle escaping bugs:
-
-```python
-# Write JS to /tmp/widget.js (plain JS, no escaping needed)
-# Then in the cell code:
-import pathlib
-_ESM = pathlib.Path("/tmp/widget.js").read_text()
-```
-
-Once the cell is saved to the notebook, the ESM is embedded in the cell
-source — the temp file is not needed at runtime.
+**Inline ESM in cell code.** Temp files are for `execute-code.sh` transport
+only — never for runtime. Use `"""` for ESM inside `'''` for the cell code.
 
 ## First Step: Explore the code_mode Context
 
@@ -188,6 +176,7 @@ Skip these and the UI breaks:
 - The `async with` context manager auto-compile-checks — if it rejects, fix and retry.
 - Clean up dry-run registrations — scratchpad side effects persist in the graph.
 - Don't write to the `.py` file directly — the kernel owns it.
+- **No temp-file deps in cells.** `pathlib.Path("/tmp/...")` in cell code is a bug.
 
 Confirm with the user before:
 
