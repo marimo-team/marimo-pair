@@ -48,11 +48,18 @@ Two operations: **discover servers** and **execute code**.
 | Operation | Script | MCP |
 |-----------|--------|-----|
 | Discover servers | `bash scripts/discover-servers.sh` | `list_sessions()` tool |
-| Execute code | `bash scripts/execute-code.sh "code"` | `execute_code(code=..., session_id=...)` tool |
+| Execute code | `bash scripts/execute-code.sh -c "code"` | `execute_code(code=..., session_id=...)` tool |
+| Execute code (complex) | `bash scripts/execute-code.sh /tmp/code.py` | same |
 
 Scripts auto-discover sessions from the registry on disk. Use `--port` to
 target a specific server when multiple are running. If the server was started
 with `--mcp`, you'll have MCP tools available as an alternative.
+
+**Use a file for complex code.** When code contains quotes, backticks,
+`${}` template literals, or multiline strings (common with anywidget ESM
+modules), write the code to a temp file with the Write tool first, then pass
+the file path as a positional argument. This avoids shell escaping issues
+entirely.
 
 ## First Step: Explore the code_mode Context
 

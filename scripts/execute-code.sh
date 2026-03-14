@@ -4,26 +4,28 @@
 # Requires the server to be started with --no-token.
 #
 # Usage:
-#   execute-code.sh <code>                    # auto-discover single session
-#   execute-code.sh --port 2718 <code>        # target by port
-#   cat script.py | execute-code.sh           # read code from stdin
+#   execute-code.sh [--port PORT] -c "code"   # inline code
+#   execute-code.sh [--port PORT] script.py    # code from file
 set -euo pipefail
 
 port=""
+code=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --port) port="$2"; shift 2 ;;
-    *) break ;;
+    -c)     code="$2"; shift 2 ;;
+    -*)     echo "Unknown option: $1" >&2; exit 1 ;;
+    *)      break ;;
   esac
 done
 
-if [[ $# -gt 0 ]]; then
-  code="$1"
-elif [[ ! -t 0 ]]; then
-  code=$(cat)
+if [[ -n "$code" ]]; then
+  : # set via -c
+elif [[ $# -gt 0 ]]; then
+  code=$(cat "$1")
 else
-  echo "Usage: execute-code.sh [--port PORT] <code>" >&2
-  echo "       cat script.py | execute-code.sh" >&2
+  echo "Usage: execute-code.sh [--port PORT] -c 'code'" >&2
+  echo "       execute-code.sh [--port PORT] script.py" >&2
   exit 1
 fi
 
@@ -110,7 +112,8 @@ session_id=$(echo "$session_ids" | head -1)
 # Events: stdout/stderr stream as JSON {"data":"..."}, done is final result.
 exit_code=0
 current_event=""
-while IFS= read -r line; do
+done_received=false
+while IFS= read -r line && [[ "$done_received" == false ]]; do
   case "$line" in
     event:*)
       current_event="${line#event: }"
@@ -131,6 +134,7 @@ while IFS= read -r line; do
           else
             echo "$payload" | jq -r '.output.data // empty'
           fi
+          done_received=true
           ;;
       esac
       ;;
