@@ -45,6 +45,11 @@ marimo edit notebook.py --no-token --no-skew-protection
 Figure out the best way to invoke `marimo` from the current directory —
 if it's a project with a managed environment, use that (e.g., `uv run marimo`).
 
+**Default to `--sandbox`.**  Use `--sandbox` unless the notebook lives inside a
+Python project (has a `pyproject.toml` with project dependencies). Sandbox mode
+manages dependencies in an isolated environment via PEP 723 inline metadata.
+E.g., `marimo edit notebook.py --sandbox --no-token --no-skew-protection`.
+
 **Do NOT use `--headless` unless the user asks for it.** Omitting it lets
 marimo auto-open the browser, which is the expected pairing experience. If the
 user explicitly requests headless, offer to open it with
