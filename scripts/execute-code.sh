@@ -8,6 +8,11 @@
 #   execute-code.sh [--port PORT] script.py    # code from file
 set -euo pipefail
 
+# Optional eval logging: set EXECUTE_CODE_LOG to a file path to record each call
+if [[ -n "${EXECUTE_CODE_LOG:-}" ]]; then
+  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$EXECUTE_CODE_LOG"
+fi
+
 port=""
 code=""
 while [[ $# -gt 0 ]]; do
