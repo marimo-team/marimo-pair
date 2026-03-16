@@ -117,16 +117,15 @@ async with cm.get_context() as ctx:
 
 ## Two Modes of Working
 
-**Scratchpad** (simple): Just Python — `print(df.head())`, check data shapes,
-test a snippet. Cell variables are already in scope. Results come back to
-you — the user doesn't see them. You can also read and set UI element state
-programmatically (see [ui-state](reference/execute-code.md#ui-state)). The
-kernel preamble in [execute-code.md](reference/execute-code.md) has the correct
-entry point and imports.
+**Scratchpad** (inspection only): Read state — `print(df.head())`, check data
+shapes, explore the API with `dir()`/`help()`. Cell variables are already in
+scope. Results come back to you — the user doesn't see them. You can also
+read and set UI element state programmatically (see
+[ui-state](reference/execute-code.md#ui-state)).
 
-**Cell operations** (complex): Creating, editing, moving, deleting cells.
-These require careful API orchestration — compile, register, notify the
-frontend, then execute. Get it wrong and the UI desyncs.
+**Cell operations** (the main workflow): Creating, editing, moving, deleting
+cells. Work directly in cells — the compile-check catches structural issues,
+and runtime errors can be fixed in-place.
 
 ## Decision Tree
 
@@ -134,7 +133,7 @@ frontend, then execute. Get it wrong and the UI desyncs.
 |-----------|--------|
 | Need to find running servers | Discover servers |
 | Need to read data/state | Use scratchpad recipes in [execute-code.md](reference/execute-code.md) |
-| Need to create/edit/move/delete cells | Follow the scratchpad-to-cell workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
+| Need to create/edit/move/delete cells | Follow the cell-first workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
 | Need to install a package | Use the `code_mode` context — see [Installing Packages](#installing-packages) |
 | Unsure what API to use | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
 | Import path fails | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
@@ -144,35 +143,29 @@ frontend, then execute. Get it wrong and the UI desyncs.
 | Need to display a notification to the user (toast, banner, focus) | See [other operations](reference/execute-code.md#other-operations) |
 | User asks to improve/optimize/clean up the notebook | See [notebook-improvements.md](reference/notebook-improvements.md) |
 
-## The Scratchpad-to-Cell Workflow
+## Cell-First Workflow
 
-**The cardinal rule: never show the user broken code.** Runtime errors in cells
-are a bad experience. Runtime errors in the scratchpad are invisible learning.
+**Work directly in cells.** Create or edit cells in the notebook rather than
+testing in the scratchpad first. The `async with` context manager
+auto-compile-checks on exit — syntax errors, multiply-defined names, and
+cycles are caught before any graph mutation occurs. If the check fails, the
+operation is rejected and you get an error.
 
-**Compile-check is not validation.** It catches syntax errors, broken refs, and
-cycles — but not wrong arguments, missing methods, or type mismatches. Don't
-let a passing compile-check give you false confidence.
+If a cell has a runtime error after creation, fix it in-place with
+`ctx.edit_cell()`. This is faster than scratchpad round-trips and the user
+sees progress incrementally.
 
-**ALWAYS test in the scratchpad before creating or editing a cell.** No
-exceptions unless the user explicitly says to skip testing. If the code is
-expensive, test on a subset — or if that's not possible, ask the user.
-
-The `async with` context manager automatically compile-checks on exit —
-syntax errors, multiply-defined names, and cycles are caught before any graph
-mutation occurs. If the check fails, the operation is rejected and you get an
-error. You don't need to compile-check manually.
-
-If testing passes, do the cell operation immediately — in the same execute-code
-call when possible. Never pause to ask; the only reason to pause is ambiguous
-intent.
+**Reserve the scratchpad for inspection only** — reading data shapes, checking
+variable state, exploring the API with `dir()`/`help()`. Don't use it to
+pre-test code that's going into a cell.
 
 ### Steps (same for add or edit)
 
 1. If editing, **read** the current cell code from the graph
-2. **Test in scratchpad** — run the code to validate at runtime
-3. **Create or update the cell** — the context manager auto-compile-checks.
-   If it fails, fix the code and retry. See
+2. **Create or update the cell** directly — the context manager
+   auto-compile-checks. If it fails, fix the code and retry. See
    [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
+3. If there's a runtime error, **edit the cell** to fix it.
 
 Keep cells small and focused — prefer splitting computation across cells and
 extracting helpers over large monolithic cells. Hide code by default so the
