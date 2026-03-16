@@ -36,19 +36,32 @@ setup. The workflow is identical either way; only the execution method differs.
 
 ## Prerequisites
 
-The marimo server must be running with token and skew protection disabled:
+The marimo server must be running with token and skew protection disabled.
 
-```bash
-marimo edit notebook.py --no-token --no-skew-protection
-```
+### How to invoke marimo
 
-Figure out the best way to invoke `marimo` from the current directory —
-if it's a project with a managed environment, use that (e.g., `uv run marimo`).
+Use the first matching strategy:
 
-**Default to `--sandbox`.**  Use `--sandbox` unless the notebook lives inside a
-Python project (has a `pyproject.toml` with project dependencies). Sandbox mode
-manages dependencies in an isolated environment via PEP 723 inline metadata.
-E.g., `marimo edit notebook.py --sandbox --no-token --no-skew-protection`.
+| # | Condition | Command | `--sandbox`? |
+|---|-----------|---------|-------------|
+| 1 | **Project exists** — `pyproject.toml` in cwd or parent | `uv run marimo edit notebook.py --no-token --no-skew-protection` | No (project manages deps) |
+| 2 | **No project, `uv` available** | `uvx marimo@latest edit notebook.py --sandbox --no-token --no-skew-protection` | Yes (default) |
+| 3 | **No project, no `uv`** — `marimo` on PATH | `marimo edit notebook.py --sandbox --no-token --no-skew-protection` | Yes (default) |
+
+**Detection steps:**
+1. Check for `pyproject.toml` in cwd or parents → strategy 1
+2. Otherwise check `command -v uv` → strategy 2
+3. Otherwise check `command -v marimo` → strategy 3
+4. If none found, tell the user to install `uv` or `marimo`
+
+**`--sandbox` is the default when there's no project.** Sandbox mode manages
+dependencies in an isolated environment via PEP 723 inline metadata. Only skip
+`--sandbox` when inside a project (strategy 1) or when the user explicitly
+asks to skip it.
+
+**No python file yet?** If the user asks to create a notebook but doesn't
+name one, pick a descriptive filename based on context (e.g., `exploration.py`,
+`analysis.py`, `dashboard.py`). Don't ask — just pick something reasonable.
 
 **Do NOT use `--headless` unless the user asks for it.** Omitting it lets
 marimo auto-open the browser, which is the expected pairing experience. If the
