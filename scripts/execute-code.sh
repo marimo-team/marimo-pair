@@ -142,6 +142,7 @@ while IFS= read -r line && [[ "$done_received" == false ]]; do
 done < <(curl -sN -X POST "${base}/api/kernel/execute" \
   -H "Content-Type: application/json" \
   -H "Marimo-Session-Id: ${session_id}" \
+  -H "Marimo-Code-Mode: true" \
   -d "$(jq -n --arg c "$code" '{code: $c}')" \
   --max-time 65)
 
