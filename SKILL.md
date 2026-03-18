@@ -8,36 +8,29 @@ description: >-
   outside of marimo or for marimo plugin/package development.
 ---
 
-> **Notebook metaprogramming** lives in `marimo._code_mode`. You **MUST** use
-> `async with` — without it, operations silently do nothing.
->
-> All `ctx.*` methods (`create_cell`, `edit_cell`, `delete_cell`,
-> `run_cell`, `install_packages`, etc.) are **synchronous** — they queue
-> operations and the context manager flushes them on exit. Do **NOT** `await`
-> them.
->
-> **Cells are not auto-executed.** `create_cell` and `edit_cell` are
-> structural — use `run_cell` to queue execution.
->
-> ```python
-> import marimo._code_mode as cm
->
-> async with cm.get_context() as ctx:
->     for c in ctx.cells:
->         print(c.cell_id, c.code[:80])
->     # sync calls — no await
->     cid = ctx.create_cell("x = 1")
->     ctx.install_packages("pandas")
->     ctx.run_cell(cid)
-> ```
->
-> Explore the API with `dir(ctx)` and `help()` at the start of each session.
-
 # marimo Pair Programming Protocol
 
-You can interact with a running marimo notebook via **bundled scripts** or
-**MCP**. Bundled scripts are the default — they work everywhere with no extra
-setup. The workflow is identical either way; only the execution method differs.
+This skill gives you full access to a running marimo notebook. You can read
+cell code, create and edit cells, install packages, run cells, and inspect
+the reactive graph — all programmatically. The user sees results live in their
+browser while you work through bundled scripts or MCP.
+
+## Philosophy
+
+marimo notebooks are a dataflow graph — cells are the fundamental unit of
+computation, connected by the variables they define and reference. When a cell
+runs, marimo automatically re-executes downstream cells. You have full access
+to the running notebook.
+
+- **Cells are your main lever.** Use them to break up work and choose how and
+  when to bring the human into the loop. Not every cell needs rich output —
+  sometimes the object itself is enough, sometimes a summary is better.
+  Match the presentation to the intent.
+- **Understand intent first.** When clear, act. When ambiguous, clarify.
+- **Follow existing signal.** Check imports, `pyproject.toml`, existing cells,
+  and `dir(ctx)` before reaching for external tools.
+- **Stay focused.** Build first, polish later — cell names, layout, and styling
+  can wait.
 
 ## Prerequisites
 
@@ -103,55 +96,55 @@ entirely.
 **Inline ESM in cell code.** Temp files are for `execute-code.sh` transport
 only — never for runtime. Use `"""` for ESM inside `'''` for the cell code.
 
-## First Step: Explore the code_mode Context
+## Executing Code
 
-The `code_mode` API can change between marimo versions. Your **first
-execute-code call** should discover what the running server actually provides:
+Every execute-code call runs inside the notebook's kernel. All cell variables
+are in scope — `print(df.head())` just works. Nothing you define persists
+between calls (variables, imports, side-effects all reset), but you can freely
+introspect the notebook: inspect variables, test code snippets, check types
+and shapes. Use this to explore, prototype, and validate before committing
+anything to the notebook — then create cells to persist state and make results
+visible to the user.
 
-**Never guess method signatures.** Always `help(ctx.method_name)` before
-calling a method for the first time — parameter names and defaults change
-across versions.
+To mutate the notebook's dataflow graph — create, edit, and delete cells,
+install packages, and run cells — use `marimo._code_mode`:
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    print(dir(ctx))
-    help(ctx)
+    cid = ctx.create_cell("x = 1")
+    ctx.install_packages("pandas")
+    ctx.run_cell(cid)
 ```
 
-## Execution Contexts
+You **must** use `async with` — without it, operations silently do nothing.
+All `ctx.*` methods are **synchronous** — they queue operations and the
+context manager flushes them on exit. Do **not** `await` them.
 
-**execute-code / scratchpad** — runs code in an ephemeral scope. Variables
-don't persist between calls and are not registered with the reactive graph.
-Mutations to existing notebook objects (e.g. UI state) do take effect.
-See [execute-code.md](reference/execute-code.md).
+**Cells are not auto-executed.** `create_cell` and `edit_cell` are structural
+changes only — use `run_cell` to queue execution.
 
-**code_mode context (`ctx`)** — mutates the notebook itself: create/edit/delete
-cells, install packages, run visible cells, inspect the reactive graph. Use
-`async with cm.get_context() as ctx`. See:
-- [execute-code.md — cell operations](reference/execute-code.md#cell-operations--mutating-the-notebook)
-- [execute-code.md — other operations](reference/execute-code.md#other-operations)
-- [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
-- [gotchas.md](reference/gotchas.md) — cached module proxies and other traps
-- [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
+`code_mode` is a tested, safe API for notebook mutations — prefer it for all
+structural changes. You also have access to marimo internals from the kernel,
+but treat that as a last resort and only with high confidence after exploration.
 
-## Philosophy
+**UI state lives outside the reactive graph.** Anywidget traitlets can be read
+or set directly (e.g., `slider.value = 5`). For `mo.ui.*` elements, use
+`ctx.set_ui_value(element, new_value)` inside `code_mode`.
 
-marimo notebooks are a dataflow graph — cells are the fundamental unit of
-computation, connected by the variables they define and reference. When a cell
-runs, marimo automatically re-executes downstream cells. You have full access
-to the running notebook.
+### First Step: Explore the API
 
-- **Cells are your main lever.** Use them to break up work and choose how and
-  when to bring the human into the loop. Not every cell needs rich output —
-  sometimes the object itself is enough, sometimes a summary is better.
-  Match the presentation to the intent.
-- **Understand intent first.** When clear, act. When ambiguous, clarify.
-- **Follow existing signal.** Check imports, `pyproject.toml`, existing cells,
-  and `dir(ctx)` before reaching for external tools.
-- **Stay focused.** Build first, polish later — cell names, layout, and styling
-  can wait.
+The `code_mode` API can change between marimo versions — and each running
+server could be a different version. Inspect what's available at the start of
+each session, especially when switching between servers.
+
+```python
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx  # inspect me — dir(), help(), .cells, ...
+```
 
 ## Guard Rails
 
@@ -171,7 +164,18 @@ Skip these and the UI breaks:
   hard to come up with while working. Skip them by default — it's easier
   to add meaningful names later when reviewing the notebook as a whole.
 
-Confirm with the user before:
+## Keep in Mind
 
-- **Installing packages** — adds dependencies to their project.
-- **Deleting cells** — removes work that may not be recoverable.
+- **The user is editing too.** The notebook can change between your calls —
+  re-inspect notebook state if it's been a while since you last looked.
+- **Deletions are destructive.** Deleting a cell removes its variables from
+  kernel memory — restoring means recreating the cell and re-running it and
+  its dependents. If intent seems ambiguous, ask first.
+- **Installing packages changes the project.** `ctx.install_packages()` adds
+  real dependencies — confirm when it's not obvious from context.
+
+## References
+
+- [gotchas.md](reference/gotchas.md) — cached module proxies and other traps
+- [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
+- [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks

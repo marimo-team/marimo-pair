@@ -261,8 +261,8 @@ print(timer.seconds)    # read
 timer.seconds = 0       # set — frontend updates automatically
 ```
 
-See [ui-state](execute-code.md#ui-state). `mo.ui.*` elements need
-`set_ui_element_value`; anywidgets use direct assignment.
+`mo.ui.*` elements need `set_ui_element_value`; anywidgets use direct
+assignment.
 
 ## `_display_()` protocol
 
