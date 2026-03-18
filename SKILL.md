@@ -160,9 +160,8 @@ Skip these and the UI breaks:
 - **No temp-file deps in cells.** `pathlib.Path("/tmp/...")` in cell code is a bug.
 - **Avoid empty cells.** Prefer `edit_cell` into existing empty cells rather
   than creating new ones. Clean up any cells that end up empty after edits.
-- **Don't worry about cell names.** Names are not required for cells and are
-  hard to come up with while working. Skip them by default — it's easier
-  to add meaningful names later when reviewing the notebook as a whole.
+- **Don't worry about cell names.** Most cells don't need explicit names —
+  see [notebook-improvements.md](reference/notebook-improvements.md#cell-names).
 
 ## Widgets and Reactivity
 
