@@ -1,0 +1,19 @@
+{
+  "name": "marimo",
+  "owner": {
+    "name": "marimo-team",
+    "email": "contact@marimo.io"
+  },
+  "metadata": {
+    "description": "Pair programming protocol for marimo notebooks",
+    "version": "0.0.1"
+  },
+  "plugins": [
+    {
+      "name": "marimo-pair",
+      "description": "Pair programming protocol for marimo notebooks",
+      "source": "./",
+      "skills": ["./"]
+    }
+  ]
+}
