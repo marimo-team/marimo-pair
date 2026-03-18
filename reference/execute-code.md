@@ -89,13 +89,19 @@ Cell operations live in `marimo._code_mode`. The module is self-documenting —
 use `dir(ctx)` and `help()` to explore. **You MUST use `async with`** (see
 top of SKILL.md).
 
-### async with — create, edit, delete cells
+### async with — create, edit, delete, run cells
 
 All mutations go through an `AsyncCodeModeContext`. The `async with` block
 is the only async part — **all `ctx.*` methods are synchronous**. They queue
 operations during the block and the context manager applies them atomically
 on exit. Do NOT `await` individual methods like `ctx.create_cell()` or
 `ctx.install_packages()` — they are plain sync calls that return immediately.
+
+**Cells are not auto-executed.** `create_cell` and `edit_cell` queue
+structural changes only. Use `run_cell` to queue a cell for execution.
+All queued `run_cell` targets are executed in a single batch on context exit.
+`run_cell` also works on existing cells that weren't edited — use it to
+re-run a cell after environment changes (e.g., installing a package).
 
 A dry-run compile check runs automatically on exit — syntax errors,
 multiply-defined names, and cycles are caught before any graph mutations occur.
@@ -105,8 +111,8 @@ import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     # All methods below are sync — no await!
-    ctx.create_cell("x = 1")
-    ctx.create_cell("y = x + 1")
+    cid1 = ctx.create_cell("x = 1")
+    cid2 = ctx.create_cell("y = x + 1")
 
     # Use before/after only when position matters
     # ctx.create_cell("setup()", before="my_cell")
@@ -114,4 +120,12 @@ async with cm.get_context() as ctx:
     ctx.edit_cell("my_cell", code="z = 42")
     ctx.delete_cell("old_cell")
     ctx.install_packages("pandas", "altair")
+
+    # Queue cells for execution
+    ctx.run_cell(cid1)
+    ctx.run_cell(cid2)
+    ctx.run_cell("my_cell")
+
+    # Re-run an existing cell without editing
+    ctx.run_cell("other_cell")
 ```

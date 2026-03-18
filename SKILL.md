@@ -12,8 +12,12 @@ description: >-
 > `async with` — without it, operations silently do nothing.
 >
 > All `ctx.*` methods (`create_cell`, `edit_cell`, `delete_cell`,
-> `install_packages`, etc.) are **synchronous** — they queue operations
-> and the context manager flushes them on exit. Do **NOT** `await` them.
+> `run_cell`, `install_packages`, etc.) are **synchronous** — they queue
+> operations and the context manager flushes them on exit. Do **NOT** `await`
+> them.
+>
+> **Cells are not auto-executed.** `create_cell` and `edit_cell` are
+> structural — use `run_cell` to queue execution.
 >
 > ```python
 > import marimo._code_mode as cm
@@ -22,8 +26,9 @@ description: >-
 >     for c in ctx.cells:
 >         print(c.cell_id, c.code[:80])
 >     # sync calls — no await
->     ctx.create_cell("x = 1")
+>     cid = ctx.create_cell("x = 1")
 >     ctx.install_packages("pandas")
+>     ctx.run_cell(cid)
 > ```
 >
 > Explore the API with `dir(ctx)` and `help()` at the start of each session.
@@ -115,61 +120,30 @@ async with cm.get_context() as ctx:
     help(ctx)
 ```
 
-## Two Modes of Working
+## Execution Contexts
 
-**Cells** are persistent and visible — the user sees output, variables survive
-across executions, and code lives in the notebook. Code meant for the notebook
-should be written to the notebook.
+**execute-code / scratchpad** — runs code in an ephemeral scope. Variables
+don't persist between calls and are not registered with the reactive graph.
+Mutations to existing notebook objects (e.g. UI state) do take effect.
+See [execute-code.md](reference/execute-code.md).
 
-**Scratchpad** is ephemeral and private — nothing persists between calls,
-the user can't see output, and variables don't enter the notebook scope.
-Use it for quick inspection: `print(df.head())`, `dir()`, `help()`, checking
-shapes and types. You can also manipulate UI state programmatically (see
-[ui-state](reference/execute-code.md#ui-state)).
-
-## Decision Tree
-
-| Situation | Action |
-|-----------|--------|
-| Need to find running servers | Discover servers |
-| Need to inspect data/state without persisting anything | Scratchpad — see [execute-code.md](reference/execute-code.md) |
-| Need to create/edit/move/delete cells | Follow the cell-first workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
-| Need to install a package | Use the `code_mode` context — see [Installing Packages](#installing-packages) |
-| Unsure what API to use | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
-| Import path fails | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
-| Package installed but module says it's missing | See [gotchas.md](reference/gotchas.md) — cached module proxies |
-| Need a custom visualization or interactive widget | See [rich-representations.md](reference/rich-representations.md) (`_display_()` for display-only, anywidget for bidirectional) |
-| Widget trait should drive downstream cells | `mo.state()` + `.observe()` — see [Reactive anywidgets](reference/rich-representations.md#reactive-anywidgets-in-marimo) |
-| Need to display a notification to the user (toast, banner, focus) | See [other operations](reference/execute-code.md#other-operations) |
-| User asks to improve/optimize/clean up the notebook | See [notebook-improvements.md](reference/notebook-improvements.md) |
-
-## Cell-First Workflow
-
-**Work directly in cells.** Code that's meant for the notebook — computations,
-visualizations, transformations — should be authored in cells. The user can
-see output as it runs and variables persist in the notebook scope. If a cell
-has a runtime error, fix it in-place with `ctx.edit_cell()`.
-
-**Use the scratchpad for ephemeral inspection** — checking shapes, reading
-variable state, exploring the API with `dir()`/`help()`. Scratchpad variables
-don't persist and output is invisible to the user (though mutations to
-existing notebook objects, like setting widget state, do take effect).
-
-### Steps (same for add or edit)
-
-0. **Pause and think about units of work.** Before touching any cells, take a
-   quiet moment to consider what the user asked for and what belongs together.
-   Each cell should represent a coherent unit.
-1. If editing, **read** the current cell code from the graph
-2. **Create or update the cell** directly — the context manager
-   auto-compile-checks. If it fails, fix the code and retry. See
-   [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
-3. If there's a runtime error, **edit the cell** to fix it.
-
-Each cell should be one coherent unit of work — use your judgment on size.
-Hide code by default so the notebook reads as a clean document.
+**code_mode context (`ctx`)** — mutates the notebook itself: create/edit/delete
+cells, install packages, run visible cells, inspect the reactive graph. Use
+`async with cm.get_context() as ctx`. See:
+- [execute-code.md — cell operations](reference/execute-code.md#cell-operations--mutating-the-notebook)
+- [execute-code.md — other operations](reference/execute-code.md#other-operations)
+- [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
+- [gotchas.md](reference/gotchas.md) — cached module proxies and other traps
+- [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
 
 ## Philosophy
+
+**Read the room.** Before acting, take a quiet moment to understand the user's
+intent. Each cell should have a clear purpose. If the user is asking for
+something visual, use visual elements. If they're describing work with data,
+do the work — don't add UI elements/widgets they didn't ask for. marimo has
+rich formatters for common objects — just returning a value is often enough.
+Reach for `mo.ui` when the user needs interactivity.
 
 You have full access to the running notebook. When the user's intent is clear,
 act on it. When it's ambiguous, clarify.

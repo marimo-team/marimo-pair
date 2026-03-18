@@ -15,14 +15,15 @@ First check if the notebook already has a cell named `"setup"`. If not,
 create one and hoist scattered imports into it:
 
 ```python
-ctx.create_cell('''import polars as pl
+cid = ctx.create_cell('''import polars as pl
 import marimo as mo
 import anywidget
 import traitlets''', name="setup")
+ctx.run_cell(cid)
 ```
 
-If a setup cell already exists, use `ctx.edit_cell("setup", code=...)` to
-modify it.
+If a setup cell already exists, use `ctx.edit_cell("setup", code=...)` and
+`ctx.run_cell("setup")` to modify and re-run it.
 
 ## Lift reusable functions into their own cells
 
