@@ -59,11 +59,10 @@ marimo edit notebook.py --no-token --no-skew-protection --sandbox
 ## Global marimo install
 
 If marimo is installed globally, check the version — code mode shipped in
-v0.20.1. If the installed version is older, prompt the user to upgrade before
+v0.21.1. If the installed version is older, prompt the user to upgrade before
 proceeding.
 
 ## Nothing found
 
 If no project marimo, no `uv`/`uvx`, and no global `marimo` on PATH, tell the
-user to install `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`) or
-install marimo (`pip install marimo`).
+user to install `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
