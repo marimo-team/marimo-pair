@@ -157,16 +157,17 @@ existing notebook objects, like setting widget state, do take effect).
 
 ### Steps (same for add or edit)
 
+0. **Pause and think about units of work.** Before touching any cells, take a
+   quiet moment to consider what the user asked for and what belongs together.
+   Each cell should represent a coherent unit.
 1. If editing, **read** the current cell code from the graph
 2. **Create or update the cell** directly — the context manager
    auto-compile-checks. If it fails, fix the code and retry. See
    [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook).
 3. If there's a runtime error, **edit the cell** to fix it.
 
-Keep cells small and focused — prefer splitting computation across cells and
-extracting helpers over large monolithic cells. Hide code by default so the
-notebook reads as a clean document. Don't bother naming cells while working —
-names are optional and easier to add later when reviewing the notebook.
+Each cell should be one coherent unit of work — use your judgment on size.
+Hide code by default so the notebook reads as a clean document.
 
 ## Philosophy
 
