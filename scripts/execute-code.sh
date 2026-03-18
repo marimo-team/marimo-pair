@@ -148,6 +148,6 @@ done < <(curl -sN -X POST "${base}/api/kernel/execute" \
   -H "Content-Type: application/json" \
   -H "Marimo-Session-Id: ${session_id}" \
   -d "$(jq -n --arg c "$code" '{code: $c}')" \
-  --max-time 65)
+)
 
 exit "$exit_code"
