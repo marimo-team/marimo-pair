@@ -252,9 +252,9 @@ Do **not** use `change["new"]` or `allow_self_loops=True`.
 traits reactive. This is rare — only use it when the full widget state should
 drive downstream cells, not just one trait.
 
-### Scratchpad access
+### Programmatic widget control (scratchpad)
 
-Read/write widget state from the scratchpad — no clicking:
+Read widget state or set UI controls from the scratchpad — no clicking:
 
 ```python
 print(timer.seconds)    # read

@@ -117,22 +117,22 @@ async with cm.get_context() as ctx:
 
 ## Two Modes of Working
 
-**Scratchpad** (inspection only): Read state — `print(df.head())`, check data
-shapes, explore the API with `dir()`/`help()`. Cell variables are already in
-scope. Results come back to you — the user doesn't see them. You can also
-read and set UI element state programmatically (see
-[ui-state](reference/execute-code.md#ui-state)).
+**Cells** are persistent and visible — the user sees output, variables survive
+across executions, and code lives in the notebook. Code meant for the notebook
+should be written to the notebook.
 
-**Cell operations** (the main workflow): Creating, editing, moving, deleting
-cells. Work directly in cells — the compile-check catches structural issues,
-and runtime errors can be fixed in-place.
+**Scratchpad** is ephemeral and private — nothing persists between calls,
+the user can't see output, and variables don't enter the notebook scope.
+Use it for quick inspection: `print(df.head())`, `dir()`, `help()`, checking
+shapes and types. You can also manipulate UI state programmatically (see
+[ui-state](reference/execute-code.md#ui-state)).
 
 ## Decision Tree
 
 | Situation | Action |
 |-----------|--------|
 | Need to find running servers | Discover servers |
-| Need to read data/state | Use scratchpad recipes in [execute-code.md](reference/execute-code.md) |
+| Need to inspect data/state without persisting anything | Scratchpad — see [execute-code.md](reference/execute-code.md) |
 | Need to create/edit/move/delete cells | Follow the cell-first workflow below, then use [execute-code.md](reference/execute-code.md#cell-operations--mutating-the-notebook) |
 | Need to install a package | Use the `code_mode` context — see [Installing Packages](#installing-packages) |
 | Unsure what API to use | See **Discovering the API** in [execute-code.md](reference/execute-code.md#discovering-the-api) |
@@ -145,19 +145,15 @@ and runtime errors can be fixed in-place.
 
 ## Cell-First Workflow
 
-**Work directly in cells.** Create or edit cells in the notebook rather than
-testing in the scratchpad first. The `async with` context manager
-auto-compile-checks on exit — syntax errors, multiply-defined names, and
-cycles are caught before any graph mutation occurs. If the check fails, the
-operation is rejected and you get an error.
+**Work directly in cells.** Code that's meant for the notebook — computations,
+visualizations, transformations — should be authored in cells. The user can
+see output as it runs and variables persist in the notebook scope. If a cell
+has a runtime error, fix it in-place with `ctx.edit_cell()`.
 
-If a cell has a runtime error after creation, fix it in-place with
-`ctx.edit_cell()`. This is faster than scratchpad round-trips and the user
-sees progress incrementally.
-
-**Reserve the scratchpad for inspection only** — reading data shapes, checking
-variable state, exploring the API with `dir()`/`help()`. Don't use it to
-pre-test code that's going into a cell.
+**Use the scratchpad for ephemeral inspection** — checking shapes, reading
+variable state, exploring the API with `dir()`/`help()`. Scratchpad variables
+don't persist and output is invisible to the user (though mutations to
+existing notebook objects, like setting widget state, do take effect).
 
 ### Steps (same for add or edit)
 

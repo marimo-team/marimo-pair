@@ -10,7 +10,7 @@ The user may need to restart the kernel — but try known workarounds first.
 
 `df.to_pandas()` fails with `ModuleNotFoundError: pa.Table requires 'pyarrow'`.
 
-**Workaround** (scratchpad):
+**Workaround** — run in a cell (the side-effect must persist across executions):
 
 ```python
 import pyarrow as _pa

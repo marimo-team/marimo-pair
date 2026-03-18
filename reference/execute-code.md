@@ -3,14 +3,14 @@
 Everything you do in the notebook goes through execute-code. This file covers
 both inspection (reading state) and mutation (creating/editing/deleting cells).
 
-## Scratchpad — inspecting state
+## Scratchpad — ephemeral inspection
 
-The scratchpad is just Python. Cell variables are already in scope — `print(df.head())`
+The scratchpad is just Python. Cell variables are in scope — `print(df.head())`
 works directly. Results come back to you; the user doesn't see them.
 
-**Scoping:** Variables defined in the scratchpad do not persist between
-execute-code calls. Only notebook cell variables survive. Do all dependent
-work in a single call.
+**Scoping:** Nothing persists between scratchpad calls — variables, imports,
+side-effects all reset. Only notebook cell variables survive. The only way to
+persist state is to add cells to the notebook.
 
 ### Kernel preamble
 
@@ -57,8 +57,9 @@ for name, val in kernel.globals.items():
 ### ui-state
 
 You can read and set the state of interactive elements from the scratchpad.
-This lets you drive the notebook programmatically — set a dropdown value,
-move a slider, enter text — without the user clicking anything.
+This lets you drive UI controls programmatically (set a dropdown, move a
+slider) without the user clicking anything. UI state changes propagate to
+the notebook even though scratchpad variables don't.
 
 **marimo UI elements** (`mo.ui.*`):
 
