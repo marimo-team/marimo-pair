@@ -164,6 +164,16 @@ Skip these and the UI breaks:
   hard to come up with while working. Skip them by default — it's easier
   to add meaningful names later when reviewing the notebook as a whole.
 
+## Widgets and Reactivity
+
+Anywidget state (traitlets) lives outside marimo's reactive graph. To hook a
+widget trait into the graph, pick one strategy per widget — never mix them:
+
+- **`mo.state` + `.observe()`** — you pick specific traits to bridge. Default choice.
+- **`mo.ui.anywidget()`** — wraps all synced traits into one reactive `.value`. Convenient but coarser.
+
+Read [rich-representations.md](reference/rich-representations.md) before wiring either.
+
 ## Keep in Mind
 
 - **The user is editing too.** The notebook can change between your calls —
