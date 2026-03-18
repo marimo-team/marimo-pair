@@ -10,10 +10,15 @@ The user may need to restart the kernel — but try known workarounds first.
 
 `df.to_pandas()` fails with `ModuleNotFoundError: pa.Table requires 'pyarrow'`.
 
-**Workaround** — run in a cell (the side-effect must persist across executions):
+**Workaround** — if this error occurs after installing pyarrow mid-session,
+run the following via `execute-code` (scratchpad), NOT in a cell. The patch
+mutates the cached module object in the running kernel, so it doesn't need to
+persist in the notebook.
 
 ```python
 import pyarrow as _pa
 import polars.dataframe.frame as _frame_mod
 _frame_mod.pa = _pa
 ```
+
+Then re-run the failing cell.

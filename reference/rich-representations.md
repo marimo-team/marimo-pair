@@ -248,9 +248,14 @@ Initialize `mo.state()` with the widget's current trait value — not a
 hardcoded default. Read the trait directly off the widget in the lambda.
 Do **not** use `change["new"]` or `allow_self_loops=True`.
 
-**`mo.ui.anywidget(widget)`** wraps the *entire* widget and makes *all* synced
-traits reactive. This is rare — only use it when the full widget state should
-drive downstream cells, not just one trait.
+### `mo.state` + `.observe()` vs `mo.ui.anywidget()`
+
+Two strategies for reactive anywidgets. Choose one per widget — don't mix them.
+
+| Strategy | Reactivity | Best for |
+|----------|-----------|----------|
+| `mo.state` + `.observe()` | Specific traits you pick | Precision — only named traits trigger downstream cells |
+| `mo.ui.anywidget(widget)` | All synced traits as one `.value` dict | Convenience — observe everything at once |
 
 ### Programmatic widget control (scratchpad)
 
