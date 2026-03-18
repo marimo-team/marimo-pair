@@ -138,23 +138,20 @@ cells, install packages, run visible cells, inspect the reactive graph. Use
 
 ## Philosophy
 
-**Read the room.** Before acting, take a quiet moment to understand the user's
-intent. Each cell should have a clear purpose. If the user is asking for
-something visual, use visual elements. If they're describing work with data,
-do the work — don't add UI elements/widgets they didn't ask for. marimo has
-rich formatters for common objects — just returning a value is often enough.
-Reach for `mo.ui` when the user needs interactivity.
+marimo notebooks are a dataflow graph — cells are the fundamental unit of
+computation, connected by the variables they define and reference. When a cell
+runs, marimo automatically re-executes downstream cells. You have full access
+to the running notebook.
 
-You have full access to the running notebook. When the user's intent is clear,
-act on it. When it's ambiguous, clarify.
-
-Before reaching for external tools or CLIs, explore what `ctx` and marimo
-already provide — marimo has integrations for many common operations (e.g.,
-installing packages). Use `dir(ctx)` and `help()` to discover capabilities.
-
-Before making choices, look for signal — notebook imports, `pyproject.toml`,
-`sys.modules`, existing cells, directory structure. Follow existing patterns.
-Take agency over things you're confident in. If you're not sure, ask.
+- **Cells are your main lever.** Use them to break up work and choose how and
+  when to bring the human into the loop. Not every cell needs rich output —
+  sometimes the object itself is enough, sometimes a summary is better.
+  Match the presentation to the intent.
+- **Understand intent first.** When clear, act. When ambiguous, clarify.
+- **Follow existing signal.** Check imports, `pyproject.toml`, existing cells,
+  and `dir(ctx)` before reaching for external tools.
+- **Stay focused.** Build first, polish later — cell names, layout, and styling
+  can wait.
 
 ## Guard Rails
 
@@ -163,20 +160,13 @@ Skip these and the UI breaks:
 - **Install packages via `ctx.install_packages()`, not `uv add` or `pip`.**
   The code API handles kernel restarts and dependency resolution correctly.
   Only fall back to external CLIs if the API is unavailable or fails.
-- **Custom widget = anywidget.** When the user asks for a "custom widget",
-  "custom view", or any bespoke visual component, build an anywidget with
-  HTML/CSS/JS — do NOT compose `mo.ui` elements. Composed `mo.ui` is fine
-  for simple forms and controls, but anywidget gives full layout control,
-  avoids same-cell value constraints, and is what the user expects when they
-  say "custom". See [rich-representations.md](reference/rich-representations.md).
-- Notify the frontend before executing cell operations — use `_code_mode`.
-- The `async with` context manager auto-compile-checks — if it rejects, fix and retry.
-- Clean up dry-run registrations — scratchpad side effects persist in the graph.
-- Don't write to the `.py` file directly — the kernel owns it.
+- **Custom widget = anywidget.** For bespoke visual components, use anywidget
+  with HTML/CSS/JS. Composed `mo.ui` is fine for simple forms and controls.
+  See [rich-representations.md](reference/rich-representations.md).
+- **NEVER write to the `.py` file directly while a session is running — the kernel owns it.**
 - **No temp-file deps in cells.** `pathlib.Path("/tmp/...")` in cell code is a bug.
-- **No empty cells.** Before creating a cell, check for existing empty cells
-  and `edit_cell` into them instead. On startup, use the default empty cell
-  rather than appending. Clean up any cells that end up empty after edits.
+- **Avoid empty cells.** Prefer `edit_cell` into existing empty cells rather
+  than creating new ones. Clean up any cells that end up empty after edits.
 - **Don't worry about cell names.** Names are not required for cells and are
   hard to come up with while working. Skip them by default — it's easier
   to add meaningful names later when reviewing the notebook as a whole.
