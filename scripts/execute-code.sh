@@ -6,6 +6,10 @@
 # Usage:
 #   execute-code.sh [--port PORT] -c "code"   # inline code
 #   execute-code.sh [--port PORT] script.py    # code from file
+#   execute-code.sh [--port PORT] <<< "code"   # stdin (here-string)
+#   execute-code.sh [--port PORT] <<'EOF'       # stdin (heredoc)
+#     code
+#   EOF
 set -euo pipefail
 
 # Optional eval logging: set EXECUTE_CODE_LOG to a file path to record each call
@@ -28,9 +32,12 @@ if [[ -n "$code" ]]; then
   : # set via -c
 elif [[ $# -gt 0 ]]; then
   code=$(cat "$1")
+elif [[ ! -t 0 ]]; then
+  code=$(cat)
 else
   echo "Usage: execute-code.sh [--port PORT] -c 'code'" >&2
   echo "       execute-code.sh [--port PORT] script.py" >&2
+  echo "       echo 'code' | execute-code.sh [--port PORT]" >&2
   exit 1
 fi
 

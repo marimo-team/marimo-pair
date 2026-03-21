@@ -55,7 +55,7 @@ Two operations: **discover servers** and **execute code**.
 |-----------|--------|-----|
 | Discover servers | `bash scripts/discover-servers.sh` | `list_sessions()` tool |
 | Execute code | `bash scripts/execute-code.sh -c "code"` | `execute_code(code=..., session_id=...)` tool |
-| Execute code (complex) | `bash scripts/execute-code.sh /tmp/code.py` | same |
+| Execute code (multiline) | `bash scripts/execute-code.sh <<'EOF'` | same |
 
 Scripts auto-discover sessions from the registry on disk. Use `--port` to
 target a specific server when multiple are running. If the server was started
@@ -76,16 +76,21 @@ If there's no `.py` file yet, pick a descriptive filename based on context
 (e.g., `exploration.py`, `analysis.py`, `dashboard.py`). Don't ask — just
 pick something reasonable.
 
-**Use a file for complex code.** When code contains quotes, backticks,
-`${}` template literals, or multiline strings (common with anywidget ESM
-modules), write the code to a temp file with the Write tool first, then pass
-the file path as a positional argument. This avoids shell escaping issues
-entirely. Write temp files under `/tmp/mo-<id>/` where `<id>` is a short
-random ID you pick once per session, to avoid collisions with stale files
-from other sessions.
+**Avoid shell escaping issues.** `-c` works for simple one-liners, but for
+multiline code or code with quotes/backticks/`${}`, use a heredoc or a file:
 
-**Inline ESM in cell code.** Temp files are for `execute-code.sh` transport
-only — never for runtime. Use `"""` for ESM inside `'''` for the cell code.
+```bash
+# heredoc (single-quoted delimiter prevents shell interpolation)
+bash scripts/execute-code.sh <<'EOF'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx.create_cell("x = 1")
+EOF
+
+# file
+bash scripts/execute-code.sh /tmp/code.py
+```
 
 ## Executing Code
 
