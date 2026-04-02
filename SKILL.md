@@ -33,7 +33,8 @@ to the running notebook.
 
 ## Prerequisites
 
-The marimo server must be running with token and skew protection disabled.
+The marimo server must be running with skew protection disabled. If the server
+uses token auth, pass the token via `--token` on the execute script.
 
 ### How to invoke marimo
 
@@ -62,7 +63,8 @@ Scripts auto-discover sessions from the registry on disk. Use `--port` to
 target a specific server when multiple are running, or `--url` to skip
 discovery entirely and hit a server URL directly (e.g.
 `--url http://localhost:2718`). `--url` is the only way to connect to
-remote servers since auto-discovery only reads the local registry. If the
+remote servers since auto-discovery only reads the local registry. Use
+`--token` to authenticate when the server has token auth enabled. If the
 server was started with `--mcp`, you'll have MCP tools available as an
 alternative.
 

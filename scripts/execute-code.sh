@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 # Execute code in a running marimo session's scratchpad.
 # No marimo installation required — talks directly to the HTTP API.
-# Requires the server to be started with --no-token.
-#
 # Usage:
-#   execute-code.sh [--port PORT] -c "code"   # inline code
-#   execute-code.sh [--port PORT] script.py    # code from file
-#   execute-code.sh [--port PORT] <<< "code"   # stdin (here-string)
-#   execute-code.sh [--port PORT] <<'EOF'       # stdin (heredoc)
+#   execute-code.sh [--port PORT] [--token TOKEN] -c "code"   # inline code
+#   execute-code.sh [--port PORT] [--token TOKEN] script.py    # code from file
+#   execute-code.sh [--port PORT] [--token TOKEN] <<< "code"   # stdin (here-string)
+#   execute-code.sh [--port PORT] [--token TOKEN] <<'EOF'       # stdin (heredoc)
 #     code
 #   EOF
-#   execute-code.sh --url URL -c "code"        # skip discovery, hit URL directly
+#   execute-code.sh --url URL [--token TOKEN] -c "code"        # skip discovery, hit URL directly
 set -euo pipefail
 
 # Optional eval logging: set EXECUTE_CODE_LOG to a file path to record each call
@@ -21,13 +19,15 @@ fi
 port=""
 code=""
 url=""
+token=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --port) port="$2"; shift 2 ;;
-    --url)  url="$2"; shift 2 ;;
-    -c)     code="$2"; shift 2 ;;
-    -*)     echo "Unknown option: $1" >&2; exit 1 ;;
-    *)      break ;;
+    --port)  port="$2"; shift 2 ;;
+    --url)   url="$2"; shift 2 ;;
+    --token) token="$2"; shift 2 ;;
+    -c)      code="$2"; shift 2 ;;
+    -*)      echo "Unknown option: $1" >&2; exit 1 ;;
+    *)       break ;;
   esac
 done
 
@@ -38,9 +38,9 @@ elif [[ $# -gt 0 ]]; then
 elif [[ ! -t 0 ]]; then
   code=$(cat)
 else
-  echo "Usage: execute-code.sh [--port PORT | --url URL] -c 'code'" >&2
-  echo "       execute-code.sh [--port PORT | --url URL] script.py" >&2
-  echo "       echo 'code' | execute-code.sh [--port PORT | --url URL]" >&2
+  echo "Usage: execute-code.sh [--port PORT | --url URL] [--token TOKEN] -c 'code'" >&2
+  echo "       execute-code.sh [--port PORT | --url URL] [--token TOKEN] script.py" >&2
+  echo "       echo 'code' | execute-code.sh [--port PORT | --url URL] [--token TOKEN]" >&2
   exit 1
 fi
 
@@ -104,8 +104,14 @@ else
   base="http://${host}:${e_port}${base_url}"
 fi
 
+# Build optional auth header
+auth_args=()
+if [[ -n "$token" ]]; then
+  auth_args+=(-H "Authorization: Bearer ${token}")
+fi
+
 # Discover session ID
-sessions_resp=$(curl -sf "${base}/api/sessions") || {
+sessions_resp=$(curl -sf "${auth_args[@]+"${auth_args[@]}"}" "${base}/api/sessions") || {
   echo "Failed to connect to marimo server at ${base}" >&2
   exit 1
 }
@@ -161,6 +167,7 @@ while IFS= read -r line && [[ "$done_received" == false ]]; do
 done < <(curl -sN -X POST "${base}/api/kernel/execute" \
   -H "Content-Type: application/json" \
   -H "Marimo-Session-Id: ${session_id}" \
+  ${auth_args[@]+"${auth_args[@]}"} \
   -d "$(jq -n --arg c "$code" '{code: $c}')" \
 )
 
