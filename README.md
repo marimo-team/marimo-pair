@@ -7,7 +7,7 @@
 ## Prerequisites
 
 - A running [marimo](https://marimo.io) notebook (started with
-  `--no-token --no-skew-protection`)
+  `--no-token`)
 - `bash`, `curl`, and `jq` available on `PATH`
 
 ## Install

@@ -33,13 +33,13 @@ to the running notebook.
 
 ## Prerequisites
 
-The marimo server must be running with skew protection disabled. If the server
-uses token auth, pass the token via `--token` on the execute script.
+If the server uses token auth, pass the token via `--token` on the execute
+script.
 
 ### How to invoke marimo
 
-marimo must be invoked with `--no-token --no-skew-protection` to be
-discoverable. The right way to invoke it depends on context (project tooling,
+marimo must be invoked with `--no-token` to be discoverable. The right way to
+invoke it depends on context (project tooling,
 global install, sandbox mode). See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree.
 

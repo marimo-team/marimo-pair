@@ -3,7 +3,7 @@
 marimo must be invoked with these flags to be discoverable by this skill:
 
 ```sh
-marimo edit notebook.py --no-token --no-skew-protection [--sandbox]
+marimo edit notebook.py --no-token [--sandbox]
 ```
 
 How you invoke `marimo` depends on context — find the right way to run it.
@@ -24,17 +24,16 @@ specify it:
 
 ```sh
 # marimo is in [dependency-groups] → "notebooks" group
-uv run --group notebooks marimo edit notebook.py --no-token --no-skew-protection
+uv run --group notebooks marimo edit notebook.py --no-token
 ```
 
 Once you know marimo is available, use whatever CLI runner the project uses:
 
 ```sh
 # uv-managed project
-uv run marimo edit notebook.py --no-token --no-skew-protection
-
+uv run marimo edit notebook.py --no-token
 # pixi-managed project
-pixi run marimo edit notebook.py --no-token --no-skew-protection
+pixi run marimo edit notebook.py --no-token
 ```
 
 Skip `--sandbox` here — the project already manages dependencies.
@@ -50,10 +49,10 @@ metadata — so the notebook stays self-contained and reproducible.
 
 ```sh
 # With uv available (preferred)
-uvx marimo@latest edit notebook.py --no-token --no-skew-protection --sandbox
+uvx marimo@latest edit notebook.py --no-token --sandbox
 
 # With marimo installed globally
-marimo edit notebook.py --no-token --no-skew-protection --sandbox
+marimo edit notebook.py --no-token --sandbox
 ```
 
 ## Global marimo install
