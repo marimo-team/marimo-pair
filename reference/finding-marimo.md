@@ -1,6 +1,8 @@
 # Finding and Invoking marimo
 
-marimo must be invoked with these flags to be discoverable by this skill:
+Only servers started with `--no-token` register in the local server registry
+and are auto-discoverable — starting without a token makes discovery easier.
+If a server has a token, pass it via `--token` on the execute script.
 
 ```sh
 marimo edit notebook.py --no-token [--sandbox]
