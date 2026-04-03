@@ -33,14 +33,13 @@ to the running notebook.
 
 ## Prerequisites
 
-If the server uses token auth, pass the token via `--token` on the execute
-script.
-
 ### How to invoke marimo
 
-marimo must be invoked with `--no-token` to be discoverable. The right way to
-invoke it depends on context (project tooling,
-global install, sandbox mode). See
+Only servers started with `--no-token` register in the local server registry
+and are auto-discoverable — starting without a token makes discovery easier.
+If a server has a token, pass it via `--token` on the execute script. The
+right way to invoke marimo depends on context (project
+tooling, global install, sandbox mode). See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree.
 
 **Do NOT use `--headless` unless the user asks for it.** Omitting it lets
@@ -67,6 +66,11 @@ remote servers since auto-discovery only reads the local registry. Use
 `--token` to authenticate when the server has token auth enabled. If the
 server was started with `--mcp`, you'll have MCP tools available as an
 alternative.
+
+### Discovery finds nothing but the user has a server running?
+
+Only `--no-token` servers are in the registry. If discovery comes up empty,
+the server likely has token auth — ask the user for the token.
 
 ### No servers running?
 
