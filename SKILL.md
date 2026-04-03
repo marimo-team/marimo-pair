@@ -4,7 +4,7 @@ description: >-
   Work inside a running marimo notebook's kernel — execute code, create cells,
   and build a notebook as an artifact. Use when the user wants to start a
   marimo notebook or work in an active marimo session.
-allowed-tools: Bash(bash */marimo-pair/scripts/discover-servers.sh), Bash(bash */marimo-pair/scripts/execute-code.sh*), Read
+allowed-tools: Bash(bash */marimo-pair/scripts/discover-servers.sh), Bash(bash */marimo-pair/*/scripts/discover-servers.sh), Bash(bash */marimo-pair/scripts/execute-code.sh*), Bash(bash */marimo-pair/*/scripts/execute-code.sh*), Read
 ---
 
 # marimo Pair Programming Protocol
