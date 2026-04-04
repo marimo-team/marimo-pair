@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Pair programming protocol for marimo notebooks",
-    "version": "0.0.7"
+    "version": "0.0.8"
   },
   "plugins": [
     {
