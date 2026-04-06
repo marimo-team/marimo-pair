@@ -59,8 +59,9 @@ Two operations: **discover servers** and **execute code**.
 | Execute code (direct URL) | `bash scripts/execute-code.sh --url URL -c "code"` | same (with `url` param) |
 
 Scripts auto-discover sessions from the registry on disk. Use `--port` to
-target a specific server when multiple are running, or `--url` to skip
-discovery entirely and hit a server URL directly (e.g.
+target a specific server when multiple are running, `--session` to target a
+specific session when multiple notebooks are open on the same server, or
+`--url` to skip discovery entirely and hit a server URL directly (e.g.
 `--url http://localhost:2718`). `--url` is the only way to connect to
 remote servers since auto-discovery only reads the local registry. Use
 `--token` to authenticate when the server has token auth enabled. If the
