@@ -2,13 +2,13 @@
 # Execute code in a running marimo session's scratchpad.
 # No marimo installation required — talks directly to the HTTP API.
 # Usage:
-#   execute-code.sh [--port PORT] [--token TOKEN] -c "code"   # inline code
-#   execute-code.sh [--port PORT] [--token TOKEN] script.py    # code from file
-#   execute-code.sh [--port PORT] [--token TOKEN] <<< "code"   # stdin (here-string)
-#   execute-code.sh [--port PORT] [--token TOKEN] <<'EOF'       # stdin (heredoc)
+#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] -c "code"   # inline code
+#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] script.py    # code from file
+#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] <<< "code"   # stdin (here-string)
+#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] <<'EOF'       # stdin (heredoc)
 #     code
 #   EOF
-#   execute-code.sh --url URL [--token TOKEN] -c "code"        # skip discovery, hit URL directly
+#   execute-code.sh --url URL [--session ID] [--token TOKEN] -c "code"        # skip discovery, hit URL directly
 set -euo pipefail
 
 # Optional eval logging: set EXECUTE_CODE_LOG to a file path to record each call
@@ -20,12 +20,14 @@ port=""
 code=""
 url=""
 token=""
+session=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --port)  port="$2"; shift 2 ;;
-    --url)   url="$2"; shift 2 ;;
-    --token) token="$2"; shift 2 ;;
-    -c)      code="$2"; shift 2 ;;
+    --port)    port="$2"; shift 2 ;;
+    --url)     url="$2"; shift 2 ;;
+    --token)   token="$2"; shift 2 ;;
+    --session) session="$2"; shift 2 ;;
+    -c)        code="$2"; shift 2 ;;
     -*)      echo "Unknown option: $1" >&2; exit 1 ;;
     *)       break ;;
   esac
@@ -111,27 +113,31 @@ if [[ -n "$token" ]]; then
 fi
 
 # Discover session ID
-sessions_resp=$(curl -sf "${auth_args[@]+"${auth_args[@]}"}" "${base}/api/sessions") || {
-  echo "Failed to connect to marimo server at ${base}" >&2
-  exit 1
-}
+if [[ -n "$session" ]]; then
+  session_id="$session"
+else
+  sessions_resp=$(curl -sf "${auth_args[@]+"${auth_args[@]}"}" "${base}/api/sessions") || {
+    echo "Failed to connect to marimo server at ${base}" >&2
+    exit 1
+  }
 
-session_ids=$(echo "$sessions_resp" | jq -r 'keys[]')
+  session_ids=$(echo "$sessions_resp" | jq -r 'keys[]')
 
-if [[ -z "$session_ids" ]]; then
-  echo "No active sessions on the server. Make sure a notebook is open in the browser." >&2
-  exit 1
+  if [[ -z "$session_ids" ]]; then
+    echo "No active sessions on the server. Make sure a notebook is open in the browser." >&2
+    exit 1
+  fi
+
+  session_count=$(echo "$session_ids" | wc -l | tr -d ' ')
+
+  if [[ $session_count -gt 1 ]]; then
+    echo "Multiple sessions on server. Cannot auto-select:" >&2
+    echo "$sessions_resp" | jq -r 'to_entries[] | "\(.key)  \(.value.filename // "")"' >&2
+    exit 1
+  fi
+
+  session_id=$(echo "$session_ids" | head -1)
 fi
-
-session_count=$(echo "$session_ids" | wc -l | tr -d ' ')
-
-if [[ $session_count -gt 1 ]]; then
-  echo "Multiple sessions on server. Cannot auto-select:" >&2
-  echo "$sessions_resp" | jq -r 'to_entries[] | "\(.key)  \(.value.filename // "")"' >&2
-  exit 1
-fi
-
-session_id=$(echo "$session_ids" | head -1)
 
 # Execute code via SSE stream
 # Events: stdout/stderr stream as JSON {"data":"..."}, done is final result.
