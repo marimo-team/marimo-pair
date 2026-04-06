@@ -7,7 +7,7 @@
 ## Prerequisites
 
 - A running [marimo](https://marimo.io) notebook (`--no-token` for
-  auto-discovery; `--token` for servers with auth)
+  auto-discovery; `MARIMO_TOKEN` env var for servers with auth)
 - `bash`, `curl`, and `jq` available on `PATH`
 
 ## Install

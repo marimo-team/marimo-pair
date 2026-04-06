@@ -37,7 +37,8 @@ to the running notebook.
 
 Only servers started with `--no-token` register in the local server registry
 and are auto-discoverable — starting without a token makes discovery easier.
-If a server has a token, pass it via `--token` on the execute script. The
+If a server has a token, set the `MARIMO_TOKEN` environment variable before
+calling the execute script (avoids leaking the token in process listings). The
 right way to invoke marimo depends on context (project
 tooling, global install, sandbox mode). See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree.
@@ -63,15 +64,19 @@ target a specific server when multiple are running, `--session` to target a
 specific session when multiple notebooks are open on the same server, or
 `--url` to skip discovery entirely and hit a server URL directly (e.g.
 `--url http://localhost:2718`). `--url` is the only way to connect to
-remote servers since auto-discovery only reads the local registry. Use
-`--token` to authenticate when the server has token auth enabled. If the
+remote servers since auto-discovery only reads the local registry. **Only
+use `--url` with trusted servers** — data is sent to the endpoint, so a
+malicious URL could exfiltrate notebook contents. Set the `MARIMO_TOKEN`
+env var to authenticate when the server has token auth enabled (`--token`
+flag also works but exposes the token in process listings). If the
 server was started with `--mcp`, you'll have MCP tools available as an
 alternative.
 
 ### Discovery finds nothing but the user has a server running?
 
 Only `--no-token` servers are in the registry. If discovery comes up empty,
-the server likely has token auth — ask the user for the token.
+the server likely has token auth — ask the user for the token and set it as
+the `MARIMO_TOKEN` environment variable.
 
 ### No servers running?
 

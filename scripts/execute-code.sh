@@ -2,13 +2,15 @@
 # Execute code in a running marimo session's scratchpad.
 # No marimo installation required — talks directly to the HTTP API.
 # Usage:
-#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] -c "code"   # inline code
-#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] script.py    # code from file
-#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] <<< "code"   # stdin (here-string)
-#   execute-code.sh [--port PORT] [--session ID] [--token TOKEN] <<'EOF'       # stdin (heredoc)
+#   execute-code.sh [--port PORT] [--session ID] -c "code"   # inline code
+#   execute-code.sh [--port PORT] [--session ID] script.py    # code from file
+#   execute-code.sh [--port PORT] [--session ID] <<< "code"   # stdin (here-string)
+#   execute-code.sh [--port PORT] [--session ID] <<'EOF'       # stdin (heredoc)
 #     code
 #   EOF
-#   execute-code.sh --url URL [--session ID] [--token TOKEN] -c "code"        # skip discovery, hit URL directly
+#   execute-code.sh --url URL [--session ID] -c "code"        # skip discovery, hit URL directly
+#
+# Auth: set MARIMO_TOKEN env var (preferred) or pass --token TOKEN (visible in ps).
 set -euo pipefail
 
 # Optional eval logging: set EXECUTE_CODE_LOG to a file path to record each call
@@ -19,7 +21,7 @@ fi
 port=""
 code=""
 url=""
-token=""
+token="${MARIMO_TOKEN:-}"
 session=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,14 +42,22 @@ elif [[ $# -gt 0 ]]; then
 elif [[ ! -t 0 ]]; then
   code=$(cat)
 else
-  echo "Usage: execute-code.sh [--port PORT | --url URL] [--token TOKEN] -c 'code'" >&2
-  echo "       execute-code.sh [--port PORT | --url URL] [--token TOKEN] script.py" >&2
-  echo "       echo 'code' | execute-code.sh [--port PORT | --url URL] [--token TOKEN]" >&2
+  echo "Usage: execute-code.sh [--port PORT | --url URL] -c 'code'" >&2
+  echo "       execute-code.sh [--port PORT | --url URL] script.py" >&2
+  echo "       echo 'code' | execute-code.sh [--port PORT | --url URL]" >&2
+  echo "Auth:  set MARIMO_TOKEN env var (preferred) or pass --token TOKEN" >&2
   exit 1
 fi
 
 if [[ -n "$url" ]]; then
   base="${url%/}"
+  # Warn when connecting to a non-local server (data exfiltration risk)
+  url_host="${url#*://}"
+  url_host="${url_host%%[:/]*}"
+  case "$url_host" in
+    localhost|127.0.0.1|::1|0.0.0.0) ;;
+    *) echo "Warning: connecting to non-local server '${url_host}'. Ensure this is trusted." >&2 ;;
+  esac
 else
   # Locate the servers directory
   if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then

@@ -2,7 +2,8 @@
 
 Only servers started with `--no-token` register in the local server registry
 and are auto-discoverable — starting without a token makes discovery easier.
-If a server has a token, pass it via `--token` on the execute script.
+If a server has a token, set the `MARIMO_TOKEN` environment variable before
+calling the execute script (avoids leaking the token in process listings).
 
 ```sh
 marimo edit notebook.py --no-token [--sandbox]
@@ -66,4 +67,4 @@ proceeding.
 ## Nothing found
 
 If no project marimo, no `uv`/`uvx`, and no global `marimo` on PATH, tell the
-user to install `uv` (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
+user to install `uv` (<https://docs.astral.sh/uv/getting-started/installation/>).
