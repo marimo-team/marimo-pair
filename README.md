@@ -1,4 +1,16 @@
-# marimo-pair
+<h1>
+<p align="center">
+  marimo-pair
+</h1>
+<p align="center">
+  reactive Python notebooks as environments for agents
+</p>
+</p>
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
+</div>
+
 
 ## Prerequisites
 
