@@ -1,9 +1,5 @@
 # marimo-pair
 
-> [!WARNING]
-> Experimental agent skill for pair programming in [marimo](https://marimo.io)
-> notebooks. Expect rough edges.
-
 ## Prerequisites
 
 - A running [marimo](https://marimo.io) notebook (`--no-token` for
