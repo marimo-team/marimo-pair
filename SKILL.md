@@ -48,6 +48,26 @@ marimo auto-open the browser, which is the expected pairing experience. If the
 user explicitly requests headless, offer to open it with
 `open http://localhost:<port>`.
 
+## Troubleshooting
+
+### User keeps getting prompted to allow Bash commands
+
+The skill declares `allowed-tools` in its frontmatter, but Claude Code may
+still prompt for each Bash call. To fix this, the user should add the absolute
+paths to the scripts to their `.claude/settings.json` (project-level) or
+`~/.claude/settings.json` (global):
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash /absolute/path/to/skills/marimo-pair/scripts/discover-servers.sh *)",
+      "Bash(bash /absolute/path/to/skills/marimo-pair/scripts/execute-code.sh *)"
+    ]
+  }
+}
+```
+
 ## How to Discover Servers and Execute Code
 
 Two operations: **discover servers** and **execute code**.
