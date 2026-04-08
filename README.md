@@ -11,7 +11,6 @@
   <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
 </div>
 
-
 ## Prerequisites
 
 - A running [marimo](https://marimo.io) notebook (`--no-token` for
@@ -51,4 +50,24 @@ To opt in to auto-updates (recommended), so you always get the latest version:
 
 ```
 /plugin → Marketplaces → marimo-team-marimo-pair → Enable auto-update
+```
+
+## FAQ
+
+### I keep getting prompted to allow Bash commands
+
+The skill declares its own `allowed-tools`, but Claude Code may still prompt
+you to approve each Bash call. To avoid repeated prompts, copy the absolute
+paths to the scripts from the installed skill and add them to your
+`.claude/settings.json` (project-level) or `~/.claude/settings.json` (global):
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash /path/to/skills/marimo-pair/scripts/discover-servers.sh *)",
+      "Bash(bash /path/to/skills/marimo-pair/scripts/execute-code.sh *)"
+    ]
+  }
+}
 ```
