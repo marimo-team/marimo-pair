@@ -50,6 +50,14 @@ user explicitly requests headless, offer to open it with
 
 ## Troubleshooting
 
+### `SyntaxError` or `ImportError` from `execute-code.sh`
+
+Code runs **inside the running marimo kernel** — `execute-code.sh` POSTs it
+over HTTP and never invokes a local Python. So errors here are not caused by
+the local Python version, missing venv, or `uv` vs `pip` — they're problems
+with the code being sent. Fix the code (use a heredoc for anything
+multiline; don't try to one-line compound statements with `;`).
+
 ### User keeps getting prompted to allow Bash commands
 
 The skill declares `allowed-tools` in its frontmatter, but Claude Code may
@@ -154,6 +162,12 @@ async with cm.get_context() as ctx:
 You **must** use `async with` — without it, operations silently do nothing.
 All `ctx.*` methods are **synchronous** — they queue operations and the
 context manager flushes them on exit. Do **not** `await` them.
+
+The kernel supports top-level `await`, so use `async with` directly. Do
+**not** wrap calls in `async def main(): ...` + `asyncio.run(main())` — it's
+unnecessary and easy to get wrong (compound statements like `async with`
+can't follow `def name():` on the same line, so cramming it into a `-c`
+one-liner produces a `SyntaxError`).
 
 **Cells are not auto-executed.** `create_cell` and `edit_cell` are structural
 changes only — use `run_cell` to queue execution.
