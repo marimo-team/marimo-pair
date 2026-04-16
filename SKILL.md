@@ -182,15 +182,12 @@ or set directly (e.g., `slider.value = 5`). For `mo.ui.*` elements, use
 
 ### First Step: Explore the API
 
-The `code_mode` API can change between marimo versions — and each running
-server could be a different version. Inspect what's available at the start of
-each session, especially when switching between servers.
+The `code_mode` API can change between marimo versions. Explore it at the
+start of each session — dig deeper into anything you're unsure about.
 
 ```python
 import marimo._code_mode as cm
-
-async with cm.get_context() as ctx:
-    ctx  # inspect me — dir(), help(), .cells, ...
+help(cm)
 ```
 
 ## Guard Rails
