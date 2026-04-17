@@ -93,7 +93,9 @@ else
     [[ -e "$f" ]] || continue
 
     if ! check_live "$f"; then
-      rm -f "$f"
+      # On Windows the HTTP probe can fail transiently (slow start, busy server),
+      # so keep the entry; only POSIX `kill -0` is reliable enough to delete on.
+      [[ "$is_windows" == false ]] && rm -f "$f"
       continue
     fi
 
