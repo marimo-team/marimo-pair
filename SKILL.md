@@ -155,7 +155,7 @@ import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     cid = ctx.create_cell("x = 1")
-    ctx.install_packages("pandas")
+    ctx.packages.add("pandas")
     ctx.run_cell(cid)
 ```
 
@@ -194,7 +194,7 @@ help(cm)
 
 Skip these and the UI breaks:
 
-- **Install packages via `ctx.install_packages()`, not `uv add` or `pip`.**
+- **Install packages via `ctx.packages.add()`, not `uv add` or `pip`.**
   The code API handles kernel restarts and dependency resolution correctly.
   Only fall back to external CLIs if the API is unavailable or fails.
 - **Custom widget = anywidget.** For bespoke visual components, use anywidget
@@ -224,7 +224,7 @@ Read [rich-representations.md](reference/rich-representations.md) before wiring 
 - **Deletions are destructive.** Deleting a cell removes its variables from
   kernel memory — restoring means recreating the cell and re-running it and
   its dependents. If intent seems ambiguous, ask first.
-- **Installing packages changes the project.** `ctx.install_packages()` adds
+- **Installing packages changes the project.** `ctx.packages.add()` adds
   real dependencies — confirm when it's not obvious from context.
 
 ## References

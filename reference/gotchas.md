@@ -45,7 +45,7 @@ tree = ast.parse(src)
 ## Cached module availability
 
 Some libraries cache optional-dependency availability at import time. Installing
-a package mid-session via `ctx.install_packages()` won't update those caches.
+a package mid-session via `ctx.packages.add()` won't update those caches.
 The user may need to restart the kernel — but try known workarounds first.
 
 ### Polars + pyarrow
