@@ -22,10 +22,19 @@ for f in "$servers_dir"/*.json; do
 
   pid=$(jq -r '.pid' "$f" 2>/dev/null) || continue
 
-  # Clean up stale entries
-  if ! kill -0 "$pid" 2>/dev/null; then
-    rm -f "$f"
-    continue
+  # Clean up stale entries. Under MSYS/Cygwin, accept either a Windows-native
+  # process lookup or `kill -0` so we handle both Windows and Bash-owned PIDs.
+  if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
+    if ! powershell.exe -NoProfile -Command "Get-Process -Id $pid -ErrorAction SilentlyContinue | Out-Null; if (\$?) { exit 0 } else { exit 1 }" \
+      && ! kill -0 "$pid" 2>/dev/null; then
+      rm -f "$f"
+      continue
+    fi
+  else
+    if ! kill -0 "$pid" 2>/dev/null; then
+      rm -f "$f"
+      continue
+    fi
   fi
 
   entry=$(jq '.' "$f" 2>/dev/null) || continue
