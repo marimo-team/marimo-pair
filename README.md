@@ -15,7 +15,8 @@
 
 - A running [marimo](https://marimo.io) notebook (`--no-token` for
   auto-discovery; `MARIMO_TOKEN` env var for servers with auth)
-- `bash`, `curl`, and `jq` available on `PATH`
+- `bash`, `curl`, and `jq` available on `PATH` (on Windows, run from
+  Git Bash)
 
 ## Install
 
