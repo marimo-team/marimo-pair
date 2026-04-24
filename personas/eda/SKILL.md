@@ -31,7 +31,7 @@ substitute for their domain knowledge.
    it with `@mo.persistent_cache` (see
    [notebook-improvements.md](../../reference/notebook-improvements.md#mopersistent_cache)).
 2. **Profile** in a single cell: row/column counts, dtypes, null counts,
-   and cardinality for object columns. Emit one compact summary — not a
+   and cardinality for string/categorical columns. Emit one compact summary — not a
    wall of `df.head()` calls.
 3. **Sample** interactively with `mo.ui.dataframe` or `mo.ui.table` so the
    user can scroll and sort without rerunning cells.
