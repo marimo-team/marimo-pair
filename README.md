@@ -53,6 +53,25 @@ To opt in to auto-updates (recommended), so you always get the latest version:
 /plugin → Marketplaces → marimo-team-marimo-pair → Enable auto-update
 ```
 
+## Personas
+
+Personas are optional companion skills that give marimo-pair a *role* — a
+goal, workflow, and cell conventions for a specific way of using the
+notebook. Invoke one at the start of a session:
+
+```
+let's pair on this notebook with /persona-eda
+```
+
+Shipped with this plugin:
+
+- [`persona-eda`](./personas/eda/SKILL.md) — exploratory data analysis.
+- [`persona-app-builder`](./personas/app-builder/SKILL.md) — turn a
+  notebook into a small, interactive app.
+
+See [`personas/README.md`](./personas/README.md) for the template and
+instructions for publishing your own.
+
 ## FAQ
 
 ### I keep getting prompted to allow Bash commands

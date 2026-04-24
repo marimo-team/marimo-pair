@@ -232,9 +232,22 @@ Read [rich-representations.md](reference/rich-representations.md) before wiring 
 - **Installing packages changes the project.** `ctx.packages.add()` adds
   real dependencies — confirm when it's not obvious from context.
 
+## Personas
+
+Personas are optional companion skills that give this skill a *role* —
+a workflow and cell conventions for a specific kind of notebook work (EDA,
+app building, …). If the user invokes one with `/persona-<slug>`, follow
+that persona's workflow while still using this skill for all notebook
+mechanics. If the user's intent clearly matches a shipped persona and they
+haven't asked for one, you may suggest it.
+
+See [personas/README.md](personas/README.md) for the list and the template
+for authoring new ones.
+
 ## References
 
 - [finding-marimo.md](reference/finding-marimo.md) — how to find and invoke the right marimo
 - [gotchas.md](reference/gotchas.md) — cached module proxies and other traps
 - [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
 - [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
+- [personas/README.md](personas/README.md) — role-based companion skills (EDA, app-builder, …)

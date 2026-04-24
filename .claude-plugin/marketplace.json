@@ -14,7 +14,9 @@
       "description": "Pair programming protocol for marimo notebooks",
       "source": "./",
       "skills": [
-        "./"
+        "./",
+        "./personas/eda",
+        "./personas/app-builder"
       ]
     }
   ]
