@@ -13,7 +13,7 @@ description: >-
 You are helping a **marimo team member** review a pairing session to find
 friction and turn it into improvements. The target is always one or both of:
 
-1. **The marimo-pair skill** (`~/github/marimo-team/marimo-pair/`)
+1. **The marimo-pair skill** (`github://marimo-team/marimo-pair`)
 2. **`marimo._code_mode`** — the underlying notebook metaprogramming API
 
 This is a **conversation**, not an automated report. You surface findings,
@@ -22,7 +22,7 @@ them.
 
 ## Guard Rails
 
-- **NEVER** edit files in `~/github/marimo-team/marimo-pair/` without explicit
+- **NEVER** edit files in `github://marimo-team/marimo-pair` without explicit
   user approval.
 - **ALWAYS** start with session analysis (Step 1) — do not jump to solutions.
 - **Present friction points before root causes** — let the user choose which
@@ -86,7 +86,7 @@ Present options and let the user choose. Multiple outputs are fine.
 
 ### For skill edits
 
-1. Read the target file in `~/github/marimo-team/marimo-pair/`
+1. Read the target file in `github://marimo-team/marimo-pair`
 2. Show the proposed diff to the user
 3. Only apply after explicit sign-off
 4. After applying, verify SKILL.md stays under 500 lines (reference/ files
@@ -110,10 +110,10 @@ wants to revisit any remaining items from Step 1, or if the retro is done.
 
 | File | Purpose |
 |------|---------|
-| `~/github/marimo-team/marimo-pair/SKILL.md` | Main skill instructions |
-| `~/github/marimo-team/marimo-pair/reference/execute-code.md` | Scratchpad & cell operation recipes |
-| `~/github/marimo-team/marimo-pair/reference/rich-representations.md` | Widget & display patterns |
-| `~/github/marimo-team/marimo-pair/scripts/` | Bundled discovery & execution scripts |
+| `github://marimo-team/marimo-pair/SKILL.md` | Main skill instructions |
+| `github://marimo-team/marimo-pair/reference/execute-code.md` | Scratchpad & cell operation recipes |
+| `github://marimo-team/marimo-pair/reference/rich-representations.md` | Widget & display patterns |
+| `github://marimo-team/marimo-pair/scripts/` | Bundled discovery & execution scripts |
 
 To inspect the live `_code_mode` API surface during a retro, the user can
 run in their notebook scratchpad:
