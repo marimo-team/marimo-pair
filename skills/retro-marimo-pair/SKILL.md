@@ -5,7 +5,7 @@ description: >-
   Use when the user wants to analyze friction from a pairing session, identify
   what went wrong, and brainstorm improvements to the skill docs or the
   underlying API. Trigger on: "retro", "what went wrong", "improve the skill",
-  "session review", "friction", or /retro-pair.
+  "session review", "friction", or /retro-marimo-pair.
 ---
 
 # Session Retrospective
