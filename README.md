@@ -75,4 +75,7 @@ paths to the scripts from the installed skill and add them to your
 
 ## Contributing
 
-We'd love your help in improving this skill. Please use the `/retro-marimo-pair` after a marimo pair session to provide feedback on how we can improve the skill and file an issue on the [GitHub repository](https://github.com/marimo-team/marimo-pair/issues).
+We'd love your help in improving this skill. After a marimo pair session,
+please run the `/retro-marimo-pair` command to share feedback on how we can
+improve the skill. You can also file an issue on the
+[GitHub repository](https://github.com/marimo-team/marimo-pair/issues).
