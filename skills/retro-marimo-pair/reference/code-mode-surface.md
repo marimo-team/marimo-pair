@@ -40,7 +40,7 @@ names, and cycles are caught before any graph mutation occurs.
 | Operation | Method | Notes |
 |-----------|--------|-------|
 | Execute code (scratchpad) | Via `execute-code.sh` or MCP | Results return to Claude, not user |
-| Execute cell | Happens automatically after cell ops | Unless `code_is_stale=True` |
+| Execute cell | `ctx.run_cell(...)` | Explicitly queue execution; `create_cell` / `update_cell` are structural only and do not auto-execute |
 
 ### Package Management
 
