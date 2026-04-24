@@ -15,7 +15,8 @@
       "source": "./",
       "skills": [
         "./",
-        "./personas/eda"
+        "./personas/eda",
+        "./personas/app-builder"
       ]
     }
   ]

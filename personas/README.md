@@ -12,9 +12,11 @@ of a session: "let's pair on this notebook with /persona-eda".
 ## Personas shipped in this repo
 
 - [`persona-eda`](./eda/SKILL.md) — exploratory data analysis.
+- [`persona-app-builder`](./app-builder/SKILL.md) — turn a notebook into a
+  small, interactive app.
 
-More personas (app-builder, ml-experiment, …) are planned. Third parties are
-welcome to publish their own.
+More personas (ml-experiment, …) are planned. Third parties are welcome to
+publish their own.
 
 ## What a persona is — and isn't
 
@@ -95,6 +97,7 @@ Add the directory to the `skills` array in
 "skills": [
   "./",
   "./personas/eda",
+  "./personas/app-builder",
   "./personas/your-slug"
 ]
 ```

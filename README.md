@@ -66,6 +66,8 @@ let's pair on this notebook with /persona-eda
 Shipped with this plugin:
 
 - [`persona-eda`](./personas/eda/SKILL.md) — exploratory data analysis.
+- [`persona-app-builder`](./personas/app-builder/SKILL.md) — turn a
+  notebook into a small, interactive app.
 
 See [`personas/README.md`](./personas/README.md) for the template and
 instructions for publishing your own.
