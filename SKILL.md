@@ -181,7 +181,7 @@ are silently lost.** It is tempting to reach for `Edit`/`Write` for a small
 tweak since `edit_cell` requires the full new cell body. Don't — without
 `--watch` (off by default) the kernel never sees those edits and overwrites
 them on its next save, so the user sees nothing. (`Read` on the `.py` is
-okay, but content may lag the live kernel; prefer `ctx.cells[...].code`.)
+okay, but content may lag the live kernel; prefer `ctx.cells[target].code`.)
 
 **UI state lives outside the reactive graph.** Anywidget traitlets can be read
 or set directly (e.g., `slider.value = 5`). For `mo.ui.*` elements, use
