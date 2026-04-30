@@ -207,7 +207,15 @@ Skip these and the UI breaks:
 - **Custom widget = anywidget.** For bespoke visual components, use anywidget
   with HTML/CSS/JS. Composed `mo.ui` is fine for simple forms and controls.
   See [rich-representations.md](reference/rich-representations.md).
-- **NEVER `Edit`, `Write`, or `NotebookEdit` the notebook `.py` file while a session is running. Direct writes are silently destroyed and never reach the user.** Marimo only watches the file with `--watch`, which is off by default. Without it, the kernel doesn't pick up file edits — and on its next save, the kernel writes its own state and clobbers yours. The user sees no change, you think the work landed, and the bug is invisible. Always use `ctx.edit_cell(target, code=...)` with the full new cell body — even for a one-character change. (`Read` is allowed, but disk content may lag the live kernel; for the current truth prefer `ctx.cells[target].code`.)
+- **NEVER `Edit`, `Write`, or `NotebookEdit` the notebook `.py` file while a
+  session is running. Direct writes are silently destroyed and never reach the
+  user.** marimo only watches the file with `--watch`, which is off by
+  default. Without it, the kernel doesn't pick up file edits — and on its
+  next save, the kernel writes its own state and clobbers yours. The user sees
+  no change, you think the work landed, and the bug is invisible. Always use
+  `ctx.edit_cell(target, code=...)` with the full new cell body — even for a
+  one-character change. (`Read` is allowed, but disk content may lag the live
+  kernel; for the current truth prefer `ctx.cells[target].code`.)
 - **No temp-file deps in cells.** `pathlib.Path("/tmp/...")` in cell code is a bug.
 - **Avoid empty cells.** Prefer `edit_cell` into existing empty cells rather
   than creating new ones. Clean up any cells that end up empty after edits.
