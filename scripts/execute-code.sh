@@ -59,14 +59,46 @@ if [[ -n "$url" ]]; then
     *) echo "Warning: connecting to non-local server '${url_host}'. Ensure this is trusted." >&2 ;;
   esac
 else
-  # Locate the servers directory
-  is_windows=false
-  if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
-    is_windows=true
-    servers_dir="$HOME/.marimo/servers"
-  else
-    servers_dir="${XDG_STATE_HOME:-$HOME/.local/state}/marimo/servers"
+  # Locate the servers directory. Several shells can read marimo's registry,
+  # and they don't all agree on where it lives:
+  #   * Linux/macOS native        -> $XDG_STATE_HOME/marimo/servers (POSIX path)
+  #   * MSYS2 / Cygwin / Git Bash -> $HOME/.marimo/servers (Windows-native marimo)
+  #   * WSL pointed at Windows    -> $USERPROFILE translated via wslpath/cygpath
+  #                                  -> .../.marimo/servers
+  # OSTYPE-based detection misses the WSL case (OSTYPE=linux-gnu there), so we
+  # scan all candidates and use the first one that actually has registry files.
+  candidates=(
+    "${XDG_STATE_HOME:-$HOME/.local/state}/marimo/servers"
+    "$HOME/.marimo/servers"
+  )
+  if [[ -n "${USERPROFILE:-}" ]]; then
+    if command -v wslpath >/dev/null 2>&1; then
+      win_home=$(wslpath -u "$USERPROFILE" 2>/dev/null) || win_home=""
+    elif command -v cygpath >/dev/null 2>&1; then
+      win_home=$(cygpath -u "$USERPROFILE" 2>/dev/null) || win_home=""
+    else
+      win_home=""
+    fi
+    [[ -n "$win_home" ]] && candidates+=("$win_home/.marimo/servers")
   fi
+
+  servers_dir=""
+  for d in "${candidates[@]}"; do
+    if [[ -d "$d" ]] && compgen -G "$d/*.json" >/dev/null 2>&1; then
+      servers_dir="$d"
+      break
+    fi
+  done
+  [[ -z "$servers_dir" ]] && servers_dir="${candidates[0]}"
+
+  # A registry living at .../.marimo/servers belongs to a Windows-native marimo
+  # (Git Bash, Cygwin, or WSL pointed at Windows) — its PIDs are Windows PIDs
+  # and won't respond to `kill -0` from any of those shells. Use HTTP probes
+  # in that case. The XDG path is always native POSIX.
+  case "$servers_dir" in
+    */.marimo/servers) is_windows=true ;;
+    *)                 is_windows=false ;;
+  esac
 
   # Liveness check. On POSIX, `kill -0 $pid` is cheap and reliable. On Windows
   # (Git Bash/MSYS2) `kill` operates on Cygwin PIDs, not the native Windows PIDs
@@ -175,6 +207,11 @@ exit_code=0
 current_event=""
 done_received=false
 while IFS= read -r line && [[ "$done_received" == false ]]; do
+  # marimo's HTTP server uses CRLF line terminators on the SSE stream
+  # (per the spec). bash's `read -r` strips the LF but leaves the CR,
+  # so the literal-prefix patterns below would never match on Windows
+  # (Git Bash and WSL) without this trim. Cheap to do unconditionally.
+  line="${line%$'\r'}"
   case "$line" in
     event:*)
       current_event="${line#event: }"
