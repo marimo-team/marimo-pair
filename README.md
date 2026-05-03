@@ -50,7 +50,7 @@ Add the marketplace and install the plugin:
 To opt in to auto-updates (recommended), so you always get the latest version:
 
 ```
-/plugin → Marketplaces → marimo-team-marimo-pair → Enable auto-update
+/plugin → Marketplaces → marimo-pair → Enable auto-update
 ```
 
 ## FAQ
