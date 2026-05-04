@@ -54,7 +54,8 @@ Do NOT use `--headless` unless the user asks.
 
 ## Executing Code
 
-Code runs in the notebook kernel. All cell variables are in scope. Nothing
+Code runs in the notebook kernel. Variables from executed cells are in scope
+(cells that haven't been run yet in this session are not available). Nothing
 persists between calls (variables, imports reset), but you can inspect state.
 
 To mutate the notebook (create/edit/delete cells, install packages):
