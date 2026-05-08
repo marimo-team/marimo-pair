@@ -9,6 +9,11 @@ calling the execute script (avoids leaking the token in process listings).
 marimo edit notebook.py --no-token [--sandbox]
 ```
 
+Start marimo in edit mode without `--headless` unless the user asks for a
+headless server. The notebook UI must be open in a browser before marimo has an
+active session for `execute-code` to target. If running headless, give the user
+the local URL and wait for them to open it before executing code.
+
 How you invoke `marimo` depends on context — find the right way to run it.
 
 ## Inside a Python project
