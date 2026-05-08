@@ -14,7 +14,7 @@
       "description": "Pair programming protocol for marimo notebooks",
       "source": "./",
       "skills": [
-        "./"
+        "./skills"
       ]
     }
   ]
