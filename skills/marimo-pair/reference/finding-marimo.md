@@ -16,6 +16,30 @@ the local URL and wait for them to open it before executing code.
 
 How you invoke `marimo` depends on context — find the right way to run it.
 
+## Notebooks with PEP 723 metadata require `--sandbox`
+
+Before picking a runner, check the notebook file for a PEP 723 header:
+
+```python
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "marimo",
+#     "polars",
+# ]
+# ///
+```
+
+If the block is present, the notebook was authored as a self-contained
+sandboxed script and **SHOULD be opened with `--sandbox`**. Without the flag
+marimo runs in the ambient environment and silently ignores the inline
+dependencies. Imports will fail or, worse, resolve to a different version than
+the author pinned.
+
+`--sandbox` works regardless of project context: inside a uv project, `uv run
+marimo edit notebook.py --no-token --sandbox` still creates the isolated env
+from the PEP 723 block rather than the project's `.venv`.
+
 ## Inside a Python project
 
 If there's a `pyproject.toml` in cwd or a parent directory, check that marimo
