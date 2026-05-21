@@ -63,7 +63,9 @@ If no server is running and the user wants a notebook, start marimo with
 `--no-token` (and without `--headless`) so it auto-registers for discovery. The
 notebook UI must be open before there is an active session for `execute-code`
 to target. The right way to invoke marimo depends on context (project tooling,
-global install, sandbox mode). See
+global install, sandbox mode). If the notebook file contains a PEP 723 `#
+/// script` header, it MUST be opened with `--sandbox` — otherwise marimo
+ignores the inline dependencies. See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree and
 [execution-context.md](reference/execution-context.md) for scripts, MCP, and
 shell quoting.
