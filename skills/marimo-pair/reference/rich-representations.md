@@ -11,9 +11,9 @@ users *see* their data in ways that tables and numbers never will. marimo
 is an environment where users create their own views, not just consume
 library charts. Help them imagine what's possible, then build it.
 
-**Use the modern web.** Always use the most modern HTML, CSS, and JavaScript
-available. If a feature is supported in every browser, even if only the most
-recent version, use it.
+**Use modern web APIs.** Models may default to older browser patterns; prefer
+modern HTML, CSS, and JavaScript that are supported in current browsers. Avoid
+build steps unless the task clearly needs them.
 
 **Prefer compact output.** marimo clips cell output at ~610px and scrolls.
 Avoid hitting that limit; if you need more space, manage your own scrolling
@@ -28,11 +28,12 @@ and views. Don't over-engineer.
 
 | Need | Approach |
 |------|----------|
-| Default for any custom output | **anywidget** — even display-only; you get layout control and can add interaction later |
-| Trivial one-off static HTML | `_display_()` or `mo.Html` — only when an anywidget is truly overkill |
-| Single built-in control used as-is (slider, dropdown) | `mo.ui.*` |
+| Custom output or interaction | **anywidget** — flexible enough to grow from display-only to interactive |
+| Tiny static HTML representation | `_display_()` or `mo.Html` |
+| Built-in control used as-is (slider, dropdown) | `mo.ui.*` |
 
-When in doubt, build an anywidget.
+For custom representations, prefer anywidget unless the output is clearly a
+small static one-off.
 
 ## anywidget
 
@@ -174,10 +175,10 @@ seconds = get_seconds()
 mo.md(f"Timer is at **{seconds}s** — {'running' if seconds > 0 else 'stopped'}")
 ```
 
-This pattern is always the same: `mo.state(widget.trait)` for the initial
-value, `.observe()` on the specific trait name, read with the getter in a
+The common pattern is `mo.state(widget.trait)` for the initial value,
+`.observe()` on the specific trait name, and reading with the getter in a
 downstream cell. See [Reactive anywidgets](#reactive-anywidgets-in-marimo)
-for the full rules.
+for the details.
 
 ### CDN dependencies
 
@@ -266,8 +267,8 @@ print(timer.seconds)    # read
 timer.seconds = 0       # set — frontend updates automatically
 ```
 
-`mo.ui.*` elements need `set_ui_element_value`; anywidgets use direct
-assignment.
+`mo.ui.*` elements need `ctx.set_ui_value(...)` from code mode; anywidgets use
+direct assignment.
 
 ## `_display_()` protocol
 
