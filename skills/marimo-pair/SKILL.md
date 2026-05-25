@@ -177,6 +177,10 @@ one-liner produces a `SyntaxError`).
 **Cells are not auto-executed.** `create_cell` and `edit_cell` are structural
 changes only — use `run_cell` to queue execution.
 
+**`create_cell` defaults to `hide_code=True`**, which collapses the code
+editor in the UI. Pass `hide_code=False` if the user wants created cells to
+be visible without manually expanding them.
+
 `code_mode` is a tested, safe API for notebook mutations — prefer it for all
 structural changes. You also have access to marimo internals from the kernel,
 but treat that as a last resort and only with high confidence after exploration.
