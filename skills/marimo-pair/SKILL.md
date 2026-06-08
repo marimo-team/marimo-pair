@@ -144,7 +144,12 @@ discarded.
 On clean exit, marimo applies packages, validates and applies structural cell
 changes, runs queued cells, then may run dependents. Validation is only
 structural since queued cell runs can still error. `create_cell` and
-`edit_cell` change notebook structure only. Use `run_cell` to execute.
+`edit_cell` change notebook structure only. Use `run_cell` to execute. 
+
+`create_cell` currently defaults to `hide_code=True`, which collapses the code
+editor in the UI. Pass `hide_code=False` if the user wants created cells to
+be visible without manually expanding them.
+
 
 ## Marimo Rules
 
