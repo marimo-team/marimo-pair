@@ -1,183 +1,152 @@
 ---
 name: marimo-pair
 description: >-
-  Work inside a running marimo notebook's kernel — execute code, create cells,
-  and build a notebook as an artifact. Use when the user wants to start a
-  marimo notebook or work in an active marimo session.
+  Drive a live marimo notebook as a workspace: run Python in the same kernel
+  the user does, inspect live notebook state, and commit durable notebook
+  changes. Use when the user wants to start a marimo notebook or pair on an
+  active marimo session.
 allowed-tools: Bash(bash **/scripts/discover-servers.sh *), Bash(bash **/scripts/execute-code.sh *), Read
 ---
 
-# marimo Pair Programming Protocol
+marimo is a reactive Python runtime for building reproducible Python programs
+(marimo notebooks). Cells are connected by the variables they define and
+reference. Running a cell re-executes dependents in dataflow order. The active
+runtime holds the kernel namespace, cell state, and dataflow graph. The
+notebook (`.py` file) is the artifact the kernel writes from that state while a
+session is running.
 
-This skill gives you full access to a running marimo notebook. You can read
-cell code, create and edit cells, install packages, run cells, and inspect
-the reactive graph — all programmatically. The user sees results live in their
-browser while you work through bundled scripts or MCP.
+A user interacts with the same runtime via a notebook UI with cells, outputs,
+and widgets.
 
-## Philosophy
+**WARNING. The active runtime is the source of truth.** During a session, you
+SHOULD NOT modify the associated `.py` file directly. File edits WILL NOT reach
+the active kernel or user, and the kernel may overwrite them on save. Use
+`marimo._code_mode` (`cm`) for notebook changes. Reading disk is fine, but
+prefer `ctx.cells[...].code` for current cell code.
 
-marimo notebooks are a dataflow graph — cells are the fundamental unit of
-computation, connected by the variables they define and reference. When a cell
-runs, marimo automatically re-executes downstream cells. You have full access
-to the running notebook.
+## Connect to a Notebook
 
-- **Cells are your main lever.** Use them to break up work and choose how and
-  when to bring the human into the loop. Not every cell needs rich output —
-  sometimes the object itself is enough, sometimes a summary is better.
-  Match the presentation to the intent.
-- **Understand intent first.** When clear, act. When ambiguous, clarify.
-- **Follow existing signal.** Check imports, `pyproject.toml`, existing cells,
-  and `dir(ctx)` before reaching for external tools.
-- **Stay focused.** Build first, polish later — cell names, layout, and styling
-  can wait.
+Use the bundled script (`bash scripts/execute-code.sh`) or MCP
+(`execute_code(...)`) to run Python in a live marimo kernel.
 
-## Prerequisites
-
-### How to invoke marimo
-
-Only servers started with `--no-token` register in the local server registry
-and are auto-discoverable — starting without a token makes discovery easier.
-If a server has a token, set the `MARIMO_TOKEN` environment variable before
-calling the execute script (avoids leaking the token in process listings). The
-right way to invoke marimo depends on context (project
-tooling, global install, sandbox mode). See
-[finding-marimo.md](reference/finding-marimo.md) for the full decision tree.
-
-**Do NOT use `--headless` unless the user asks for it.** Omitting it lets
-marimo auto-open the browser, which is the expected pairing experience. If the
-user explicitly requests headless, offer to open `http://localhost:<port>`
-in their browser (`open` on macOS, `xdg-open` on Linux, `start` on Windows).
-
-## Troubleshooting
-
-### `SyntaxError` or `ImportError` from `execute-code.sh`
-
-Code runs **inside the running marimo kernel** — `execute-code.sh` POSTs it
-over HTTP and never invokes a local Python. So errors here are not caused by
-the local Python version, missing venv, or `uv` vs `pip` — they're problems
-with the code being sent. Fix the code (use a heredoc for anything
-multiline; don't try to one-line compound statements with `;`).
-
-### User keeps getting prompted to allow Bash commands
-
-The skill declares `allowed-tools` in its frontmatter, but Claude Code may
-still prompt for each Bash call. To fix this, the user should add the absolute
-paths to the scripts to their `.claude/settings.json` (project-level) or
-`~/.claude/settings.json` (global):
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(bash /absolute/path/to/skills/marimo-pair/scripts/discover-servers.sh *)",
-      "Bash(bash /absolute/path/to/skills/marimo-pair/scripts/execute-code.sh *)"
-    ]
-  }
-}
-```
-
-## How to Discover Servers and Execute Code
-
-Two operations: **discover servers** and **execute code**.
-
-| Operation | Script | MCP |
-|-----------|--------|-----|
-| Discover servers | `bash scripts/discover-servers.sh` | `list_sessions()` tool |
-| Execute code | `bash scripts/execute-code.sh -c "code"` | `execute_code(code=..., session_id=...)` tool |
-| Execute code (multiline) | `bash scripts/execute-code.sh <<'EOF'` | same |
-| Execute code (by URL) | `bash scripts/execute-code.sh --url http://localhost:2718 -c "code"` | same (with `url` param) |
-
-Scripts auto-discover sessions from the local server registry. Use
-`--port` to target a specific server when multiple are running,
-`--session` to target a specific session when multiple notebooks are
-open on the same server, or `--url` to skip discovery and connect to a
-server by URL (e.g. `--url http://localhost:2718`). **On Windows, prefer
-direct `--url` when registry discovery is empty** — see the next section
-for why. Set the `MARIMO_TOKEN` env var to authenticate when the server
-has token auth enabled (`--token` flag also works but exposes the token
-in process listings). If the server was started with `--mcp`, you'll
-have MCP tools available as an alternative.
-
-### Discovery finds nothing but the user has a server running?
-
-Only `--no-token` servers are in the registry. If discovery comes up empty,
-the server likely has token auth — ask the user for the token and set it as
-the `MARIMO_TOKEN` environment variable.
-
-On **Windows (Git Bash / MSYS2)**, discovery can also come up empty even for
-a running `--no-token` server. If the user confirms marimo is reachable
-locally, fall back to `--url http://127.0.0.1:<port>` (ask for the port).
-
-### No servers running?
-
-**Always discover before starting.** Background task "completed" notifications
-do not mean the server died — check the output or run discover first.
-
-If no servers are found, read the user's intent — if they want a notebook,
-start one. **Always start marimo as a background task** (using
-`run_in_background` on the Bash tool) so the server automatically gets cleaned
-up when the session ends and doesn't block the conversation. See
-[finding-marimo.md](reference/finding-marimo.md).
-
-If there's no `.py` file yet, pick a descriptive filename based on context
-(e.g., `exploration.py`, `analysis.py`, `dashboard.py`). Don't ask — just
-pick something reasonable.
-
-**Avoid shell escaping issues.** `-c` works for simple one-liners, but for
-multiline code or code with quotes/backticks/`${}`, use a heredoc or a file:
+If the user provides a notebook URL, target it directly:
 
 ```bash
-# heredoc (single-quoted delimiter prevents shell interpolation)
-bash scripts/execute-code.sh <<'EOF'
+bash scripts/execute-code.sh --url http://localhost:2718 -c "print('connected')"
+```
+
+Use `-c` only for short one-liners. For multiline code or code containing
+quotes, backticks, `$`, or braces, use a single-quoted heredoc:
+
+```bash
+bash scripts/execute-code.sh --url http://localhost:2718 <<'PY'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    ctx.create_cell("x = 1")
-EOF
-
-# file
-bash scripts/execute-code.sh /tmp/code.py
-
-# target a specific port (skips auto-selection when multiple servers run)
-bash scripts/execute-code.sh --port 2718 -c "1 + 1"
+    cid = ctx.create_cell("x = df.head()")
+    ctx.run_cell(cid)
+PY
 ```
 
-## Executing Code
+When code already lives in a file, pass the file path:
 
-Every execute-code call runs inside the notebook's kernel. All cell variables
-are in scope — `print(df.head())` just works. Nothing you define persists
-between calls (variables, imports, side-effects all reset), but you can freely
-introspect the notebook: inspect variables, test code snippets, check types
-and shapes. Use this to explore, prototype, and validate before committing
-anything to the notebook — then create cells to persist state and make results
-visible to the user.
+```bash
+bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
+```
 
-To mutate the notebook's dataflow graph — create, edit, and delete cells,
-install packages, and run cells — use `marimo._code_mode`:
+If no target is provided, find or start a session. First look for a running
+session with `bash scripts/discover-servers.sh`, MCP `list_sessions()`, or
+local process context. When multiple sessions are possible, target with
+`--url`, `--port`, or `--session`.
+
+If no server is running and the user wants a notebook, start marimo with
+`--no-token` (and without `--headless`) so it auto-registers for discovery. The
+notebook UI must be open before there is an active session for `execute-code`
+to target. The right way to invoke marimo depends on context (project tooling,
+global install, sandbox mode). If the notebook file contains a PEP 723 `#
+/// script` header, it MUST be opened with `--sandbox` — otherwise marimo
+ignores the inline dependencies. See
+[finding-marimo.md](reference/finding-marimo.md) for the full decision tree and
+[execution-context.md](reference/execution-context.md) for scripts, MCP, and
+shell quoting.
+
+## Scratchpad Scope
+
+`execute-code` evaluates Python in marimo's scratchpad: a temporary namespace
+with a shallow copy of the kernel globals. Notebook variables are available by
+name, but new top-level bindings and rebindings are discarded after each call.
+In-place mutations to notebook-owned objects can persist because those names
+still reference live objects.
+
+Each call reports stdout and stderr from the scratchpad, plus console output
+from notebook cells it causes to run, including reactive descendants.
+
+### Ordinary Python
+
+Use ordinary Python in the scratchpad to inspect variables, sample data, test
+transformations, probe APIs, check imports, and read widget state.
+
+```python
+print(df.head())
+
+x = 10
+print(x)
+```
+
+Here `df` comes from notebook globals, while `x` is a scratchpad-local binding.
+`x` exists for this call only and WILL NOT be added to notebook globals.
+
+### Persist with `cm`
+
+Top-level scratchpad assignments and rebindings are temporary. To persist work,
+including new variables, you MUST submit changes through `marimo._code_mode`
+(`cm`).
+
+`marimo._code_mode` is a PRIVATE, UNSTABLE agent API (note the leading
+underscore). It exists for tools like this skill to drive a live kernel from
+the scratchpad. DO NOT import it from notebook cells, library code, or
+anything a user would run — methods can change or disappear across marimo
+versions and kernels. Treat every `import marimo._code_mode as cm` as
+scratchpad-only.
+
+At session start, inspect what `cm` exposes in the active kernel:
+
+```python
+import marimo._code_mode as cm
+
+help(cm)
+```
+
+Open a code-mode context to queue notebook changes.
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = 1")
-    ctx.packages.add("pandas")
+    cid = ctx.create_cell("x = df.head()")
     ctx.run_cell(cid)
 ```
 
-You **must** use `async with` — without it, operations silently do nothing.
-All `ctx.*` methods are **synchronous** — they queue operations and the
-context manager flushes them on exit. Do **not** `await` them.
+The scratchpad supports top-level async code. Use `async with` directly;
+wrapping it in `asyncio.run(...)` is unnecessary and can conflict with the
+kernel's event loop.
 
-The kernel supports top-level `await`, so use `async with` directly. Do
-**not** wrap calls in `async def main(): ...` + `asyncio.run(main())` — it's
-unnecessary and easy to get wrong (compound statements like `async with`
-can't follow `def name():` on the same line, so cramming it into a `-c`
-one-liner produces a `SyntaxError`).
+After this block exits and the new cell runs, `x` is notebook state. Later
+scratchpad calls can read `x` by name. Code later in the same scratchpad call
+should read `ctx.globals["x"]`, because the scratchpad namespace was copied
+before the cell ran.
 
-**Cells are not auto-executed.** `create_cell` and `edit_cell` are structural
-changes only — use `run_cell` to queue execution.
+Inside the context, queued mutation methods are synchronous. Call them
+directly; do not `await` them. Each call queues an operation for marimo to
+apply when the context exits normally. If the block raises, the queue is
+discarded.
 
-**`create_cell` defaults to `hide_code=True`**, which collapses the code
+On clean exit, marimo applies packages, validates and applies structural cell
+changes, runs queued cells, then may run dependents. Validation is only
+structural since queued cell runs can still error. `create_cell` and
+`edit_cell` change notebook structure only. Use `run_cell` to execute. 
+
+`create_cell` currently defaults to `hide_code=True`, which collapses the code
 editor in the UI. Pass `hide_code=False` if the user wants created cells to
 be visible without manually expanding them.
 
@@ -185,75 +154,141 @@ be visible without manually expanding them.
 structural changes. You also have access to marimo internals from the kernel,
 but treat that as a last resort and only with high confidence after exploration.
 
-**Edit cells through `code_mode`, never the file system. Direct file writes
-are silently lost.** It is tempting to reach for `Edit`/`Write` for a small
-tweak since `edit_cell` requires the full new cell body. Don't — without
-`--watch` (off by default) the kernel never sees those edits and overwrites
-them on its next save, so the user sees nothing. (`Read` on the `.py` is
-okay, but content may lag the live kernel; prefer `ctx.cells[target].code`.)
+## Marimo Rules
 
-**UI state lives outside the reactive graph.** Anywidget traitlets can be read
-or set directly (e.g., `slider.value = 5`). For `mo.ui.*` elements, use
-`ctx.set_ui_value(element, new_value)` inside `code_mode`.
+marimo imposes a small contract on notebook code so it can keep the notebook as
+a directed acyclic graph (DAG):
 
-### First Step: Explore the API
+- **No cycles** - cells cannot depend on each other in a cycle.
+- **No public redefinitions across cells** - each name has one owning cell.
+- **No wildcard imports** - `import *` prevents static analysis of definitions.
 
-The `code_mode` API can change between marimo versions. Explore it at the
-start of each session — dig deeper into anything you're unsure about.
+These rules keep the kernel, UI, and saved artifact consistent.
+
+When `cm` submits a cell body, marimo parses its top-level definitions and
+references. A top-level name enters the graph unless it is private with a
+leading underscore.
 
 ```python
-import marimo._code_mode as cm
-help(cm)
+# Public definitions: values, total, i, value, mean
+values = np.array([1, 2, 3])
+total = 0
+for i, value in enumerate(values):
+    total += value
+mean = total / len(values)
+mean
 ```
 
-## Guard Rails
+```python
+# Public definition: mean
+_values = np.array([1, 2, 3])
+_total = 0
+for _i, _value in enumerate(_values):
+    _total += _value
+mean = _total / len(_values)
+mean
+```
 
-Skip these and the UI breaks:
+Use private names for intermediates that no other cell should read. Public
+names define the notebook-level dataflow. If a `cm` edit violates the contract,
+marimo rejects the structural change and returns the validation error.
 
-- **Install packages via `ctx.packages.add()`, not `uv add` or `pip`.**
-  The code API handles kernel restarts and dependency resolution correctly.
-  Only fall back to external CLIs if the API is unavailable or fails.
-- **Custom widget = anywidget.** For bespoke visual components, use anywidget
-  with HTML/CSS/JS. Composed `mo.ui` is fine for simple forms and controls.
-  See [rich-representations.md](reference/rich-representations.md).
-- **NEVER `Edit`, `Write`, or `NotebookEdit` the notebook `.py` file while a
-  session is running. Direct writes are silently destroyed and never reach the
-  user.** marimo only watches the file with `--watch`, which is off by
-  default. Without it, the kernel doesn't pick up file edits — and on its
-  next save, the kernel writes its own state and clobbers yours. The user sees
-  no change, you think the work landed, and the bug is invisible. Always use
-  `ctx.edit_cell(target, code=...)` with the full new cell body — even for a
-  one-character change. (`Read` is allowed, but disk content may lag the live
-  kernel; for the current truth prefer `ctx.cells[target].code`.)
-- **No temp-file deps in cells.** `pathlib.Path("/tmp/...")` in cell code is a bug.
-- **Avoid empty cells.** Prefer `edit_cell` into existing empty cells rather
-  than creating new ones. Clean up any cells that end up empty after edits.
-- **Don't worry about cell names.** Most cells don't need explicit names —
-  see [notebook-improvements.md](reference/notebook-improvements.md#cell-names).
+## The Notebook's Shape
 
-## Widgets and Reactivity
+A notebook is an ordered collection of cells. `ctx.cells` is the document view
+and `ctx.graph` is the dataflow view.
 
-Anywidget state (traitlets) lives outside marimo's reactive graph. To hook a
-widget trait into the graph, pick one strategy per widget — never mix them:
+```python
+for cell in ctx.cells:
+    cell  # .id, .code, .name, .config, .status, .errors
 
-- **`mo.state` + `.observe()`** — you pick specific traits to bridge. Default choice.
-- **`mo.ui.anywidget()`** — wraps all synced traits into one reactive `.value`. Convenient but coarser.
+ctx.cells["setup"]         # by name
+ctx.cells[0]               # by position
+list(ctx.cells.keys())     # all IDs, in notebook order
+```
 
-Read [rich-representations.md](reference/rich-representations.md) before wiring either.
+Cell IDs are opaque strings which can be queried from the notebook or captured
+from `cm` return values:
 
-## Keep in Mind
+```python
+cid = ctx.create_cell("df = pd.read_csv('data.csv')")
+print(cid)   # e.g. 'Hbol'
+```
 
-- **The user is editing too.** The notebook can change between your calls —
-  re-inspect notebook state if it's been a while since you last looked.
-- **Deletions are destructive.** Deleting a cell removes its variables from
-  kernel memory — restoring means recreating the cell and re-running it and
-  its dependents. If intent seems ambiguous, ask first.
-- **Installing packages changes the project.** `ctx.packages.add()` adds
-  real dependencies — confirm when it's not obvious from context.
+Alternatively, cells can be assigned and referenced by `name`. The graph can be
+used to understand its role in the dataflow.
+
+```python
+for cid, impl in ctx.graph.cells.items():
+    impl  # .defs, .refs   (sets of public names)
+
+ctx.graph.descendants(cid)   # cells that re-run when this one changes
+ctx.graph.ancestors(cid)     # cells this one depends on
+```
+
+In marimo, deletes are *destructive* so it can be useful to query the
+descendants prior to deleting to understand it's impact.
+
+## Writing Notebook Changes
+
+The graph contract keeps marimo able to run and save the notebook. Passing
+those checks alone does not guarantee a useful artifact. Committed cells should
+still be readable, rerunnable, and editable.
+
+Make durable edits that reuse the notebook's existing names, imports,
+dependencies, and UI model. Don't be lazy. Avoid one-off workarounds that pass
+`cm` validation but leave a brittle notebook.
+
+### Cell Bodies
+
+Submit the code that belongs in the cell.
+
+- **Submit cell contents** - `create_cell` and `edit_cell` take cell contents,
+  not saved-file `@app.cell` wrappers.
+- **Read before replacing** - for now, another editor may change a cell between
+  scratchpad calls. Before `edit_cell`, read the current body from
+  `ctx.cells[...]` and submit the full replacement.
+- **Reuse notebook imports** - if `np` already exists, use it or edit the owning
+  import cell. DO NOT add `import numpy as _np` just to bypass the graph.
+- **Define public names intentionally** - use public names for values later
+  cells should reference. Use private `_name` bindings or function locals for
+  same-cell intermediates.
+- **Run cells deliberately** - `create_cell` and `edit_cell` change structure
+  only. Queue `ctx.run_cell(...)` when the cell should execute.
+
+### Prefer `cm`-Managed Changes
+
+Use `cm` APIs when they exist. Avoid direct file edits, shell package commands,
+and scratchpad-only state for changes that should persist.
+
+- **Do not edit the `.py` artifact** - DO NOT use `Edit`, `Write`, or
+  `NotebookEdit` on the notebook file during a live session. Use
+  `ctx.edit_cell(...)` even for small changes.
+- **Manage packages through `cm`** - use `ctx.packages.add()` or
+  `ctx.packages.remove()` instead of direct `uv` or `pip`; confirm
+  non-obvious dependency changes.
+- **Avoid transient paths** - persisted cells should not depend on `/tmp/...`
+  unless the work is intentionally transient.
+- **Delete deliberately** - deleting a cell removes globals it defines. Reuse
+  empty cells when convenient and delete cells left empty after edits.
+
+### UI and Widgets
+
+Inspect the object before changing it. Different UI objects update through
+different paths.
+
+- **Set `mo.ui.*` through `cm`** - use `ctx.set_ui_value(element, value)` inside
+  `cm.get_context()`.
+- **Set anywidget traitlets directly** - synced traitlets are Python
+  attributes, for example `widget.value = 5`.
+
+For designing custom visual or interactive output, see
+[rich-representations.md](reference/rich-representations.md).
 
 ## References
 
-- [finding-marimo.md](reference/finding-marimo.md) — how to find and invoke the right marimo
-- [gotchas.md](reference/gotchas.md) — cached module proxies and other traps
+- [execution-context.md](reference/execution-context.md) — scripts, MCP, auth, startup, and shell quoting
+- [finding-marimo.md](reference/finding-marimo.md) — choosing the right marimo invocation
+- [gotchas.md](reference/gotchas.md) — cached module proxies and notebook traps
 - [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
 - [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
