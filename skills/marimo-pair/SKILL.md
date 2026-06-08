@@ -150,9 +150,6 @@ structural since queued cell runs can still error. `create_cell` and
 editor in the UI. Pass `hide_code=False` if the user wants created cells to
 be visible without manually expanding them.
 
-`code_mode` is a tested, safe API for notebook mutations — prefer it for all
-structural changes. You also have access to marimo internals from the kernel,
-but treat that as a last resort and only with high confidence after exploration.
 
 ## Marimo Rules
 
