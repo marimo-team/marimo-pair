@@ -17,11 +17,33 @@ mo.ui.table(_df)               # NameError: name '_df' is not defined
 
 **Fix:** Either merge both into one cell, or use a non-private name (`df`).
 
+## Redefining a public name across cells
+
+Each public name has one owning cell. Defining it again in another cell fails
+with `Multiply-defined names`. This is easy to hit when building a notebook
+incrementally — a second cell reassigns `df`, `results`, `data`, etc.
+
+```python
+# Cell A
+df = pd.read_csv("data.csv")
+
+# Cell B — FAILS: df already defined in Cell A
+df = df.dropna()               # Multiply-defined names: df
+```
+
+**Fix — pick one:**
+
+- **Edit the owning cell** if the step belongs there (`ctx.edit_cell`).
+- **Use a new name** when later cells need the result (`clean = df.dropna()`).
+- **Use a private `_` name** for a throwaway intermediate (`_clean = df.dropna()`).
+
+`ctx.graph.cells[cid].defs` shows what a cell already owns.
+
 ## Duplicate public imports across cells
 
-marimo enforces single-definition: a public name (like `pd`) can only be
-defined in one cell. If two cells both `import pandas as pd`, you get a
-`Multiply-defined names` error at validation.
+The same single-definition rule applies to imports: a public name (like `pd`)
+can only be defined in one cell. If two cells both `import pandas as pd`, you
+get a `Multiply-defined names` error at validation.
 
 **Fix:** Use a `_` prefix on the second import (`import pandas as _pd`) or
 consolidate imports into a shared cell.
