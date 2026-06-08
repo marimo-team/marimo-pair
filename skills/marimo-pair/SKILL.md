@@ -181,6 +181,13 @@ changes only — use `run_cell` to queue execution.
 structural changes. You also have access to marimo internals from the kernel,
 but treat that as a last resort and only with high confidence after exploration.
 
+**Edit cells through `code_mode`, never the file system. Direct file writes
+are silently lost.** It is tempting to reach for `Edit`/`Write` for a small
+tweak since `edit_cell` requires the full new cell body. Don't — without
+`--watch` (off by default) the kernel never sees those edits and overwrites
+them on its next save, so the user sees nothing. (`Read` on the `.py` is
+okay, but content may lag the live kernel; prefer `ctx.cells[target].code`.)
+
 **UI state lives outside the reactive graph.** Anywidget traitlets can be read
 or set directly (e.g., `slider.value = 5`). For `mo.ui.*` elements, use
 `ctx.set_ui_value(element, new_value)` inside `code_mode`.
@@ -205,7 +212,15 @@ Skip these and the UI breaks:
 - **Custom widget = anywidget.** For bespoke visual components, use anywidget
   with HTML/CSS/JS. Composed `mo.ui` is fine for simple forms and controls.
   See [rich-representations.md](reference/rich-representations.md).
-- **NEVER write to the `.py` file directly while a session is running — the kernel owns it.**
+- **NEVER `Edit`, `Write`, or `NotebookEdit` the notebook `.py` file while a
+  session is running. Direct writes are silently destroyed and never reach the
+  user.** marimo only watches the file with `--watch`, which is off by
+  default. Without it, the kernel doesn't pick up file edits — and on its
+  next save, the kernel writes its own state and clobbers yours. The user sees
+  no change, you think the work landed, and the bug is invisible. Always use
+  `ctx.edit_cell(target, code=...)` with the full new cell body — even for a
+  one-character change. (`Read` is allowed, but disk content may lag the live
+  kernel; for the current truth prefer `ctx.cells[target].code`.)
 - **No temp-file deps in cells.** `pathlib.Path("/tmp/...")` in cell code is a bug.
 - **Avoid empty cells.** Prefer `edit_cell` into existing empty cells rather
   than creating new ones. Clean up any cells that end up empty after edits.

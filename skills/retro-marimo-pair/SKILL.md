@@ -66,40 +66,53 @@ For each friction point the user selects, work through these lenses:
 Discuss each lens briefly, then converge on the most likely root cause with the
 user. It's okay to have multiple contributing causes.
 
-## Step 3: Brainstorm Solutions
+## Step 3: Diagnose & Capture
 
-Based on the root cause, brainstorm concrete next steps. Possible outputs:
+The goal of a retro is **diagnosis**, not a contribution. Based on the root
+cause, write up a clear diagnosis the team can act on — don't jump to proposing
+or authoring a fix.
 
-- **Skill edit** — Draft changes to SKILL.md or reference/ files, discuss with
-  user, optionally apply (Step 4)
-- **API design sketch** — Propose what a better `_code_mode` API would look
-  like for this case, with code examples
-- **Issue draft** — Write up a bug report or feature request for marimo
-  (the user decides where to file it)
-- **Pattern/recipe** — Document a new pattern that should be added to the
-  skill's reference docs
-- **No action** — Sometimes the discussion itself is the value
+For each friction point, produce:
 
-Present options and let the user choose. Multiple outputs are fine.
+- **Diagnosis** — What went wrong and why it was frustrating, in plain terms
+- **Contributing factors** — Skill structure, gap, misleading docs, API
+  ergonomics, missing API, API bug, context window (from Step 2)
+- **Considerations** — Trade-offs, open questions, or things that would need to
+  be true for a fix to make sense. Note possible directions here, but frame
+  them as considerations rather than committed solutions.
 
-## Step 4: Apply (if agreed)
+The default next step is to **capture the diagnosis as an issue or discussion**
+so the team can weigh it — not to immediately make a contribution. Concrete
+code changes (skill edits, API designs) come *after* an issue/discussion
+exists and the user explicitly chooses to go further.
 
-### For skill edits
+Present the diagnosis and ask: **"Want me to draft this as an issue or
+discussion?"**
+
+## Step 4: File or Follow Up
+
+### Default: file an issue / discussion
+
+Write it up clearly for the marimo team to triage:
+
+- **Problem:** What happened and why it's painful
+- **Current behavior:** What the skill or `_code_mode` does today
+- **Considerations:** Trade-offs and open questions (not a committed solution)
+- **Example:** A minimal snippet or quote from the session, if helpful
+
+Leave the actual filing to the user — do not auto-file. This is the preferred
+outcome: surface friction for the team rather than ship a fix from the retro.
+
+### Only if the user explicitly wants to go further
+
+A skill edit or API change should follow an issue/discussion, not replace it.
+If — and only if — the user explicitly asks to draft a change now:
 
 1. Read the target file in `github://marimo-team/marimo-pair`
 2. Show the proposed diff to the user
 3. Only apply after explicit sign-off
 4. After applying, verify SKILL.md stays under 500 lines (reference/ files
    have no limit)
-
-### For API proposals or issues
-
-1. Write it up clearly with:
-   - **Problem:** What happened and why it's painful
-   - **Current behavior:** What `_code_mode` does today
-   - **Proposed behavior:** What it should do instead
-   - **Example code:** Before/after snippets
-2. Leave it for the user to action — do not auto-file
 
 ### Wrapping up
 

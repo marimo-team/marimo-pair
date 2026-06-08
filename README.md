@@ -44,13 +44,13 @@ Add the marketplace and install the plugin:
 
 ```
 /plugin marketplace add marimo-team/marimo-pair
-/plugin install marimo-pair@marimo-team-marimo-pair
+/plugin install marimo-pair@marimo-pair
 ```
 
 To opt in to auto-updates (recommended), so you always get the latest version:
 
 ```
-/plugin → Marketplaces → marimo-team-marimo-pair → Enable auto-update
+/plugin → Marketplaces → marimo-pair → Enable auto-update
 ```
 
 ## FAQ
