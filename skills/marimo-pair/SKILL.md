@@ -250,6 +250,10 @@ Submit the code that belongs in the cell.
 - **Define public names intentionally** - use public names for values later
   cells should reference. Use private `_name` bindings or function locals for
   same-cell intermediates.
+- **Define each public name once** - a public name has one owning cell.
+  Reassigning it in another cell fails with `Multiply-defined names`; edit the
+  owning cell or give the result a new name. See
+  [gotchas.md](reference/gotchas.md).
 - **Run cells deliberately** - `create_cell` and `edit_cell` change structure
   only. Queue `ctx.run_cell(...)` when the cell should execute.
 
@@ -286,6 +290,6 @@ For designing custom visual or interactive output, see
 
 - [execution-context.md](reference/execution-context.md) — scripts, MCP, auth, startup, and shell quoting
 - [finding-marimo.md](reference/finding-marimo.md) — choosing the right marimo invocation
-- [gotchas.md](reference/gotchas.md) — cached module proxies and notebook traps
+- [gotchas.md](reference/gotchas.md) — name redefinition, cached module proxies, and notebook traps
 - [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
 - [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks

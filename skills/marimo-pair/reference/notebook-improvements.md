@@ -18,8 +18,14 @@ cells. It's the place for module imports. Consolidating imports here keeps
 the notebook clean and ensures every cell can rely on those modules being
 available.
 
-First check if the notebook already has a cell named `"setup"`. If not,
-create one and hoist scattered imports into it:
+**The setup cell cannot reference other cells' variables.** It runs first, so
+it must be self-contained: imports, constants, and definitions that depend only
+on each other. Reading a name defined elsewhere (e.g. `df`, a UI element) fails
+with `The setup cell cannot have references`.
+
+First check if the notebook already has a cell named `"setup"`. If not, create
+one and hoist scattered imports into it. `name="setup"` auto-positions the cell
+first — no `before`/`after` needed:
 
 ```python
 cid = ctx.create_cell('''import polars as pl
@@ -29,8 +35,8 @@ import traitlets''', name="setup")
 ctx.run_cell(cid)
 ```
 
-If a setup cell already exists, use `ctx.edit_cell("setup", code=...)` and
-`ctx.run_cell("setup")` to modify and re-run it.
+If a setup cell already exists, `create_cell(name="setup")` raises `ValueError`;
+use `ctx.edit_cell("setup", code=...)` and `ctx.run_cell("setup")` instead.
 
 ## Lift reusable functions into their own cells
 
