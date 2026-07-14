@@ -59,3 +59,4 @@ jobs:
           gh release create "v${{ steps.bump.outputs.version }}" \
             --title "v${{ steps.bump.outputs.version }}" \
             --generate-notes
+permissions: {}
