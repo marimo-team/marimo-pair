@@ -1,6 +1,6 @@
 {
   "name": "marimo-pair",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Pair programming protocol for marimo notebooks",
   "author": {
     "name": "marimo-team",
