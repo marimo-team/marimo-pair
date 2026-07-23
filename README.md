@@ -67,7 +67,8 @@ paths to the scripts from the installed skill and add them to your
   "permissions": {
     "allow": [
       "Bash(bash /path/to/skills/marimo-pair/scripts/discover-servers.sh *)",
-      "Bash(bash /path/to/skills/marimo-pair/scripts/execute-code.sh *)"
+      "Bash(bash /path/to/skills/marimo-pair/scripts/execute-code.sh *)",
+      "Bash(bash /path/to/skills/marimo-pair/scripts/lens-context.sh *)"
     ]
   }
 }
