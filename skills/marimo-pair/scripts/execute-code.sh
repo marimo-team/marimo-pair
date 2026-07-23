@@ -190,7 +190,8 @@ while IFS= read -r line && [[ "$done_received" == false ]]; do
           ;;
         done)
           if echo "$payload" | jq -e '.success == false' >/dev/null 2>&1; then
-            echo "$payload" | jq -r '.error.msg' >&2
+            echo "$payload" |
+              jq -r '.error.msg // .error.message // "Notebook execution failed."' >&2
             exit_code=1
           else
             echo "$payload" | jq -r '.output.data // empty'
@@ -206,5 +207,10 @@ done < <(curl -sN -X POST "${base}/api/kernel/execute" \
   ${auth_args[@]+"${auth_args[@]}"} \
   -d "$(jq -n --arg c "$code" '{code: $c}')" \
 )
+
+if [[ "$done_received" == false ]]; then
+  echo "Notebook execution ended before marimo reported completion." >&2
+  exit_code=1
+fi
 
 exit "$exit_code"
