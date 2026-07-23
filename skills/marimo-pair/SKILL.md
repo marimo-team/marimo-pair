@@ -5,7 +5,7 @@ description: >-
   the user does, inspect live notebook state, and commit durable notebook
   changes. Use when the user wants to start a marimo notebook or pair on an
   active marimo session.
-allowed-tools: Bash(bash **/scripts/discover-servers.sh *), Bash(bash **/scripts/execute-code.sh *), Read
+allowed-tools: Bash(bash **/scripts/discover-servers.sh *), Bash(bash **/scripts/execute-code.sh *), Bash(bash **/scripts/lens-context.sh *), Read
 ---
 
 marimo is a reactive Python runtime for building reproducible Python programs
@@ -69,6 +69,43 @@ ignores the inline dependencies. See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree and
 [execution-context.md](reference/execution-context.md) for scripts, MCP, and
 shell quoting.
+
+## Ground Requests with Lens
+
+After connecting, run one Lens scan:
+
+```bash
+bash scripts/lens-context.sh --url http://localhost:2718 scan
+```
+
+The command reports `absent` when `marimo-lens` is unavailable or the notebook
+has no live Lens object. Continue with the ordinary Pair workflow and do not
+retry Lens during the same request. A later notebook state change or an
+explicit user request starts a new scan.
+
+A `ready` result identifies the current selection, its output cell, an
+optional note, and compact graph metadata. Treat the current selection as the
+likely referent for phrases such as "this cell". Use the normal code-mode
+workflow to inspect source and graph neighbors as the task requires. Load Lens
+text or image evidence when the request depends on information absent from the
+scan.
+
+Before the first notebook mutation, mark the primary cell with `activity`.
+Choose one short contextual label, such as `On it`, `Checking`, or `Updating`,
+and keep it for the run. Activity remains visible through edits and execution.
+
+After the mutation call completes, use a fresh call to verify that every
+claimed cell is `idle` and that the requested output is current. Resolve all
+selections addressed by the same verified change in one command. Call
+`reveal` last to bring the result into view and end activity. Pass the exact
+selection IDs, revision, and Lens token returned by the scan. Leave activity
+and selections open while execution or verification is incomplete.
+
+A reopened selection can include the prior resolution summary so follow-up
+work starts with that receipt.
+
+Read [marimo-lens.md](reference/marimo-lens.md) for commands, progressive
+context loading, image cleanup, and result handling.
 
 ## Scratchpad Scope
 
@@ -293,3 +330,5 @@ For designing custom visual or interactive output, see
 - [gotchas.md](reference/gotchas.md) — name redefinition, cached module proxies, and notebook traps
 - [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
 - [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
+- [marimo-lens.md](reference/marimo-lens.md): selected outputs, progressive
+  context, images, and completion
