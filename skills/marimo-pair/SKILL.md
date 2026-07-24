@@ -64,13 +64,13 @@ If no server is running and the user wants a notebook, start marimo with
 notebook UI must be open before there is an active session for `execute-code`
 to target. The right way to invoke marimo depends on context (project tooling,
 global install, sandbox mode). If the notebook file contains a PEP 723 `#
-/// script` header, it MUST be opened with `--sandbox` — otherwise marimo
+/// script` header, it MUST be opened with `--sandbox`, or marimo
 ignores the inline dependencies. See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree and
 [execution-context.md](reference/execution-context.md) for scripts, MCP, and
 shell quoting.
 
-## Ground Requests with Lens
+## Optional Lens Context
 
 After connecting, run one Lens scan:
 
@@ -90,16 +90,23 @@ workflow to inspect source and graph neighbors as the task requires. Load Lens
 text or image evidence when the request depends on information absent from the
 scan.
 
+For visual or spatial work, use `scan --image cell` and open the returned path.
+One cell image contains every open mark on that output.
+
 Before the first notebook mutation, mark the primary cell with `activity`.
-Choose one short contextual label, such as `On it`, `Checking`, or `Updating`,
-and keep it for the run. Activity remains visible through edits and execution.
+Choose a short, free-form label from the user's intent. `On it...`,
+`Tracing this...`, and `Tidying the chart...` illustrate the voice. Compose
+any equivalent phrase, put the concrete action in the message, and keep the
+label for the run. Activity remains visible through edits and execution.
 
 After the mutation call completes, use a fresh call to verify that every
-claimed cell is `idle` and that the requested output is current. Resolve all
-selections addressed by the same verified change in one command. Call
-`reveal` last to bring the result into view and end activity. Pass the exact
-selection IDs, revision, and Lens token returned by the scan. Leave activity
-and selections open while execution or verification is incomplete.
+claimed cell is `idle` and that the requested output is current. Open a fresh
+image after a visual change. Resolve all selections addressed by the same
+verified change in one command. Call `reveal` last to bring the result into
+view and end activity. Pass the exact selection IDs, revision, and Lens token
+returned by the scan. Remove every returned `imageDir` after the final image
+read. Leave activity and selections open while execution or verification is
+incomplete.
 
 A reopened selection can include the prior resolution summary so follow-up
 work starts with that receipt.
@@ -142,7 +149,7 @@ including new variables, you MUST submit changes through `marimo._code_mode`
 `marimo._code_mode` is a PRIVATE, UNSTABLE agent API (note the leading
 underscore). It exists for tools like this skill to drive a live kernel from
 the scratchpad. DO NOT import it from notebook cells, library code, or
-anything a user would run — methods can change or disappear across marimo
+anything a user would run. Methods can change or disappear across marimo
 versions and kernels. Treat every `import marimo._code_mode as cm` as
 scratchpad-only.
 
@@ -164,8 +171,8 @@ async with cm.get_context() as ctx:
     ctx.run_cell(cid)
 ```
 
-The scratchpad supports top-level async code. Use `async with` directly;
-wrapping it in `asyncio.run(...)` is unnecessary and can conflict with the
+The scratchpad supports top-level async code. Use `async with` directly.
+Wrapping it in `asyncio.run(...)` is unnecessary and can conflict with the
 kernel's event loop.
 
 After this block exits and the new cell runs, `x` is notebook state. Later
@@ -174,7 +181,7 @@ should read `ctx.globals["x"]`, because the scratchpad namespace was copied
 before the cell ran.
 
 Inside the context, queued mutation methods are synchronous. Call them
-directly; do not `await` them. Each call queues an operation for marimo to
+directly and do not `await` them. Each call queues an operation for marimo to
 apply when the context exits normally. If the block raises, the queue is
 discarded.
 
@@ -288,7 +295,7 @@ Submit the code that belongs in the cell.
   cells should reference. Use private `_name` bindings or function locals for
   same-cell intermediates.
 - **Define each public name once** - a public name has one owning cell.
-  Reassigning it in another cell fails with `Multiply-defined names`; edit the
+  Reassigning it in another cell fails with `Multiply-defined names`. Edit the
   owning cell or give the result a new name. See
   [gotchas.md](reference/gotchas.md).
 - **Run cells deliberately** - `create_cell` and `edit_cell` change structure
@@ -303,7 +310,7 @@ and scratchpad-only state for changes that should persist.
   `NotebookEdit` on the notebook file during a live session. Use
   `ctx.edit_cell(...)` even for small changes.
 - **Manage packages through `cm`** - use `ctx.packages.add()` or
-  `ctx.packages.remove()` instead of direct `uv` or `pip`; confirm
+  `ctx.packages.remove()` instead of direct `uv` or `pip`. Confirm
   non-obvious dependency changes.
 - **Avoid transient paths** - persisted cells should not depend on `/tmp/...`
   unless the work is intentionally transient.
@@ -325,10 +332,10 @@ For designing custom visual or interactive output, see
 
 ## References
 
-- [execution-context.md](reference/execution-context.md) — scripts, MCP, auth, startup, and shell quoting
-- [finding-marimo.md](reference/finding-marimo.md) — choosing the right marimo invocation
-- [gotchas.md](reference/gotchas.md) — name redefinition, cached module proxies, and notebook traps
-- [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
-- [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
+- [execution-context.md](reference/execution-context.md): scripts, MCP, auth, startup, and shell quoting
+- [finding-marimo.md](reference/finding-marimo.md): choosing the right marimo invocation
+- [gotchas.md](reference/gotchas.md): name redefinition, cached module proxies, and notebook traps
+- [rich-representations.md](reference/rich-representations.md): custom widgets and visualizations
+- [notebook-improvements.md](reference/notebook-improvements.md): improving existing notebooks
 - [marimo-lens.md](reference/marimo-lens.md): selected outputs, progressive
   context, images, and completion
