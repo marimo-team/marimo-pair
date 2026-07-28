@@ -29,7 +29,8 @@ prefer `ctx.cells[...].code` for current cell code.
 Use the bundled script (`bash scripts/execute-code.sh`) or MCP
 (`execute_code(...)`) to run Python in a live marimo kernel.
 
-If the user provides a notebook URL, target it directly:
+`execute-code.sh` always takes `--url`. If the user provides a notebook URL,
+target it directly:
 
 ```bash
 bash scripts/execute-code.sh --url http://localhost:2718 -c "print('connected')"
@@ -54,10 +55,11 @@ When code already lives in a file, pass the file path:
 bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
 ```
 
-If no target is provided, find or start a session. First look for a running
-session with `bash scripts/discover-servers.sh`, MCP `list_sessions()`, or
-local process context. When multiple sessions are possible, target with
-`--url`, `--port`, or `--session`.
+If the user gives no URL, find or start a session. Look for a running server
+with `bash scripts/discover-servers.sh`, MCP `list_sessions()`, or local
+process context, and pass the `url` it reports to `--url`. The session is
+resolved for you unless several notebooks are open on that server, in which
+case add `--session`.
 
 If no server is running and the user wants a notebook, start marimo with
 `--no-token` (and without `--headless`) so it auto-registers for discovery. The
