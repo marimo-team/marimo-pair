@@ -71,14 +71,26 @@ fi
 base="${url%/}"
 
 # Warn when connecting to a non-local server (data exfiltration risk)
-url_host="${url#*://}"
-url_host="${url_host%%[:/]*}"
+url_authority="${url#*://}"
+url_authority="${url_authority%%/*}"
+case "$url_authority" in
+  \[*\]*)
+    url_host="${url_authority#\[}"
+    url_host="${url_host%%\]*}"
+    ;;
+  *)
+    url_host="${url_authority%%:*}"
+    ;;
+esac
 case "$url_host" in
   localhost|127.0.0.1|::1|0.0.0.0) ;;
   *)
     # Under WSL the gateway is the Windows host running this distro, not a
     # remote machine.
-    gateway=$(ip route show default 2>/dev/null | awk 'NR == 1 { print $3 }') || gateway=""
+    gateway=""
+    if command -v ip >/dev/null 2>&1; then
+      gateway=$(ip route show default 2>/dev/null | awk 'NR == 1 { print $3 }') || gateway=""
+    fi
     if [[ "$url_host" != "$gateway" ]]; then
       echo "Warning: connecting to non-local server '${url_host}'. Ensure this is trusted." >&2
     fi

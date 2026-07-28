@@ -19,7 +19,7 @@ How you invoke `marimo` depends on context — find the right way to run it.
 ## Where the registry lives
 
 A registering server writes one JSON file per instance and removes it on clean
-shutdown: `$XDG_STATE_HOME/marimo/servers` (default `~/.local/state/marimo`)
+shutdown: `$XDG_STATE_HOME/marimo/servers` (default `~/.local/state/marimo/servers`)
 on Linux and macOS, `%USERPROFILE%\.marimo\servers` on Windows.
 
 Inside WSL, both are in play. A notebook started in the distro registers at the
