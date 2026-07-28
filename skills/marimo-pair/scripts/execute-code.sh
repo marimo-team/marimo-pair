@@ -175,6 +175,7 @@ exit_code=0
 current_event=""
 done_received=false
 while IFS= read -r line && [[ "$done_received" == false ]]; do
+  line="${line%$'\r'}" # SSE permits CRLF; `read` strips only the LF
   case "$line" in
     event:*)
       current_event="${line#event: }"
