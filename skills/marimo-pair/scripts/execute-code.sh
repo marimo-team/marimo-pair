@@ -72,7 +72,9 @@ base="${url%/}"
 
 # Warn when connecting to a non-local server (data exfiltration risk)
 url_authority="${url#*://}"
-url_authority="${url_authority%%/*}"
+url_authority="${url_authority%%[/?#]*}"
+# Strip userinfo so this check uses the same effective host as curl.
+url_authority="${url_authority##*@}"
 case "$url_authority" in
   \[*\]*)
     url_host="${url_authority#\[}"
@@ -91,7 +93,7 @@ case "$url_host" in
     if command -v ip >/dev/null 2>&1; then
       gateway=$(ip route show default 2>/dev/null | awk 'NR == 1 { print $3 }') || gateway=""
     fi
-    if [[ "$url_host" != "$gateway" ]]; then
+    if [[ -z "$gateway" || "$url_host" != "$gateway" ]]; then
       echo "Warning: connecting to non-local server '${url_host}'. Ensure this is trusted." >&2
     fi
     ;;
