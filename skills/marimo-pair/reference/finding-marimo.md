@@ -16,6 +16,24 @@ the local URL and wait for them to open it before executing code.
 
 How you invoke `marimo` depends on context — find the right way to run it.
 
+## Where the registry lives
+
+A registering server writes one JSON file per instance and removes it on clean
+shutdown: `$XDG_STATE_HOME/marimo/servers` (default `~/.local/state/marimo/servers`)
+on Linux and macOS, `%USERPROFILE%\.marimo\servers` on Windows.
+
+Inside WSL, both are in play. A notebook started in the distro registers at the
+XDG path; one started on the Windows host registers in the Windows profile,
+which `discover-servers.sh` also reads. Windows-host servers show up with
+`"origin": "windows-host"`, and reaching them depends on WSL networking: under
+the default NAT the distro has its own loopback, so a host notebook bound to
+`127.0.0.1` is unreachable and only `--host 0.0.0.0` (or mirrored networking)
+lets WSL connect. The `url` in each entry already accounts for this, so use it.
+
+Cross-OS discovery needs WSL interop: `cmd.exe` to locate the Windows profile,
+and `tasklist.exe` to tell a live Windows PID from a dead one. With interop
+disabled, only servers inside the distro are found.
+
 ## Notebooks with PEP 723 metadata require `--sandbox`
 
 Before picking a runner, check the notebook file for a PEP 723 header:
