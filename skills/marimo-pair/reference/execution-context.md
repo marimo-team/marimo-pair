@@ -9,19 +9,15 @@ incorrectly.
 - `--url` is required, and connects to a marimo server or notebook URL.
 - `--session` selects one notebook session on that server.
 
-`discover-servers.sh` reports a `url` for every server it finds, already
-resolved for wherever the script is running, plus `origin` (`local` or
-`windows-host`). Pass it to `--url` as given.
+`discover-servers.sh` reports a `url` for every server it finds, resolved for
+wherever the script is running, plus `origin` (`local` or `windows-host`). Pass
+it to `--url` as given. A `url` of `null` means the server is running but
+nothing answered on any address reachable.
 
-A `url` of `null` means the server is running but nothing answered on any
-address reachable from here. `discover-servers.sh` explains that case on
-stderr — see the WSL error below.
-
-The session is resolved automatically when the server has one notebook open,
-which is the usual case. Pass `--session` only when the script reports several.
-Do not hold on to a session id: marimo keeps one session per notebook file and
-renames it whenever the browser reconnects, so an id goes stale on a page
-refresh while the notebook and its kernel carry on. Re-read it when you need it.
+Sessions are resolved automatically when the server has one notebook open. Pass
+`--session` only when the script reports several. Session ids go stale on user
+page refresh, so be mindful of holding onto session ids for too long. Re-read
+it when you need it.
 
 If multiple servers or sessions are available, do not guess. Ask for the URL or
 session, or inspect local context.
@@ -55,7 +51,6 @@ bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
 
 ## Common Script Errors
 
-- **Missing --url** - run `discover-servers.sh` and pass the url it reports.
 - **`[]` from discover-servers.sh** - nothing is registered. Only servers
   started with `--no-token` register; otherwise ask the user for the URL, or
   start marimo with the project's normal tooling.
