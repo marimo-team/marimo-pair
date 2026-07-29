@@ -23,7 +23,7 @@ MARIMO_TOKEN=... bash scripts/execute-code.sh --url http://localhost:2718 -c "1 
 
 `--token` also works, but may expose the token in process listings. If both are
 present, `--token` overrides `MARIMO_TOKEN`. The script sends the token as
-`Authorization: Bearer ...` on session discovery and code execution requests.
+`Authorization: ******` on session discovery and code execution requests.
 
 ## Code Input
 
