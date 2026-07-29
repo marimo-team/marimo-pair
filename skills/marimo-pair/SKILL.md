@@ -36,11 +36,10 @@ target it directly:
 bash scripts/execute-code.sh --url http://localhost:2718 -c "print('connected')"
 ```
 
-Use `-c` only for short one-liners. For multiline code or code containing
-quotes, backticks, `$`, or braces, use a single-quoted heredoc:
+Pass code with `-c CODE`, `-` for stdin, or a file path:
 
 ```bash
-bash scripts/execute-code.sh --url http://localhost:2718 <<'PY'
+bash scripts/execute-code.sh --url http://localhost:2718 - <<'PY'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
@@ -49,28 +48,22 @@ async with cm.get_context() as ctx:
 PY
 ```
 
-When code already lives in a file, pass the file path:
-
-```bash
-bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
-```
-
-If the user gives no URL, find or start a session. Look for a running server
+If the user gives no URL, find or start a notebook. Look for a running server
 with `bash scripts/discover-servers.sh`, MCP `list_sessions()`, or local
-process context, and pass the `url` it reports to `--url`. The session is
-resolved for you unless several notebooks are open on that server, in which
-case add `--session`.
+process context, and pass the `url` it reports to `--url`. With one notebook
+open, the script targets it automatically; with several, pass `--file` with
+the notebook's file key.
 
 If no server is running and the user wants a notebook, start marimo with
 `--no-token` (and without `--headless`) so it auto-registers for discovery. The
-notebook UI must be open before there is an active session for `execute-code`
-to target. The right way to invoke marimo depends on context (project tooling,
-global install, sandbox mode). If the notebook file contains a PEP 723 `#
+notebook UI must be open for `execute-code` to target it. The right invocation
+depends on context (project tooling, global install, sandbox mode). If the
+notebook file contains a PEP 723 `#
 /// script` header, it MUST be opened with `--sandbox` — otherwise marimo
 ignores the inline dependencies. See
 [finding-marimo.md](reference/finding-marimo.md) for the full decision tree and
-[execution-context.md](reference/execution-context.md) for scripts, MCP, and
-shell quoting.
+[execution-context.md](reference/execution-context.md) for selector resolution,
+scripts, MCP, and shell quoting.
 
 ## Scratchpad Scope
 

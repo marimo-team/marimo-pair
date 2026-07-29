@@ -2,23 +2,21 @@
 # Execute code in a running marimo session's scratchpad.
 # No marimo installation required — talks directly to the HTTP API.
 # Usage:
-#   execute-code.sh --url URL [--session ID] -c "code"    # inline code
-#   execute-code.sh --url URL [--session ID] script.py    # code from file
-#   execute-code.sh --url URL [--session ID] <<< "code"   # stdin (here-string)
-#   execute-code.sh --url URL [--session ID] <<'EOF'      # stdin (heredoc)
-#     code
-#   EOF
+#   execute-code.sh --url URL [--file PATH | --session ID] -c "code"
+#   execute-code.sh --url URL [--file PATH | --session ID] -
+#   execute-code.sh --url URL [--file PATH | --session ID] script.py
 #
 # Find the URL with discover-servers.sh. With one notebook open on the server
-# the session is resolved automatically; --session picks one of several.
+# the session is resolved automatically. --file stably identifies a notebook;
+# --session targets an exact (but ephemeral) session ID.
 #
 # Auth: set MARIMO_TOKEN env var (preferred) or pass --token TOKEN (visible in ps).
 set -euo pipefail
 
 usage() {
-  echo "Usage: execute-code.sh --url URL [--session ID] -c 'code'" >&2
-  echo "       execute-code.sh --url URL [--session ID] script.py" >&2
-  echo "       echo 'code' | execute-code.sh --url URL [--session ID]" >&2
+  echo "Usage: execute-code.sh --url URL [--file PATH | --session ID] -c 'code'" >&2
+  echo "       execute-code.sh --url URL [--file PATH | --session ID] -" >&2
+  echo "       execute-code.sh --url URL [--file PATH | --session ID] script.py" >&2
   echo "URL:   run discover-servers.sh; it reports the url to use." >&2
   echo "Auth:  set MARIMO_TOKEN env var (preferred) or pass --token TOKEN" >&2
   exit 1
@@ -33,12 +31,15 @@ code=""
 url=""
 token="${MARIMO_TOKEN:-}"
 session=""
+file=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --url)     url="$2"; shift 2 ;;
     --token)   token="$2"; shift 2 ;;
     --session) session="$2"; shift 2 ;;
+    --file)    file="$2"; shift 2 ;;
     -c)        code="$2"; shift 2 ;;
+    -)         break ;;
     -*)      echo "Unknown option: $1" >&2; usage ;;
     *)       break ;;
   esac
@@ -49,10 +50,19 @@ if [[ -z "$url" ]]; then
   usage
 fi
 
+if [[ -n "$session" && -n "$file" ]]; then
+  echo "--file and --session are mutually exclusive." >&2
+  usage
+fi
+
 if [[ -n "$code" ]]; then
   : # set via -c
 elif [[ $# -gt 0 ]]; then
-  code=$(cat "$1")
+  if [[ "$1" == "-" ]]; then
+    code=$(cat)
+  else
+    code=$(cat "$1")
+  fi
 elif [[ ! -t 0 ]]; then
   code=$(cat)
 else
@@ -105,7 +115,8 @@ if [[ -n "$token" ]]; then
   auth_args+=(-H "Authorization: Bearer ${token}")
 fi
 
-# Discover session ID
+# Resolve session ID. A file key is stable across browser reconnects, while a
+# session ID names one particular browser/kernel connection.
 if [[ -n "$session" ]]; then
   session_id="$session"
 else
@@ -129,17 +140,42 @@ else
     exit 1
   fi
 
-  session_count=$(wc -l <<<"$session_ids" | tr -d ' ')
+  if [[ -n "$file" ]]; then
+    matching_session_ids=$(jq -r --arg file "$file" '
+      to_entries[]
+      | select(.value.path == $file or .value.filename == $file)
+      | .key
+    ' <<<"$sessions_resp")
 
-  if [[ $session_count -gt 1 ]]; then
-    # TODO: select by filename instead. An id is only good until the browser
-    # reconnects; the filename is stable. Needs an upstream change first.
-    echo "Multiple sessions on server. Cannot auto-select:" >&2
-    jq -r 'to_entries[] | "\(.key)  \(.value.filename // "")"' <<<"$sessions_resp" >&2
-    exit 1
+    if [[ -z "$matching_session_ids" ]]; then
+      echo "No active session matches --file '${file}'. Available sessions:" >&2
+      jq -r 'to_entries[] | "\(.key)  \(.value.path // .value.filename // "")"' <<<"$sessions_resp" >&2
+      exit 1
+    fi
+
+    matching_session_count=$(wc -l <<<"$matching_session_ids" | tr -d ' ')
+    if [[ $matching_session_count -gt 1 ]]; then
+      echo "Multiple active sessions match --file '${file}':" >&2
+      jq -r --arg file "$file" '
+        to_entries[]
+        | select(.value.path == $file or .value.filename == $file)
+        | "\(.key)  \(.value.path // .value.filename // "")"
+      ' <<<"$sessions_resp" >&2
+      exit 1
+    fi
+
+    session_id=$(head -1 <<<"$matching_session_ids")
+  else
+    session_count=$(wc -l <<<"$session_ids" | tr -d ' ')
+
+    if [[ $session_count -gt 1 ]]; then
+      echo "Multiple sessions on server. Select one with --file or --session:" >&2
+      jq -r 'to_entries[] | "\(.key)  \(.value.path // .value.filename // "")"' <<<"$sessions_resp" >&2
+      exit 1
+    fi
+
+    session_id=$(head -1 <<<"$session_ids")
   fi
-
-  session_id=$(head -1 <<<"$session_ids")
 fi
 
 # Execute code via SSE stream
@@ -200,7 +236,9 @@ if [[ "$done_received" == false ]]; then
       printf '%s' "$unparsed" >&2
     fi
   fi
-  if [[ -n "$session" ]]; then
+  if [[ -n "$file" ]]; then
+    echo "The session for --file may have changed during execution. Retry the same --file command." >&2
+  elif [[ -n "$session" ]]; then
     echo "The --session id may be stale: marimo renames a session when the browser reconnects. Retry without --session." >&2
   fi
   exit 1
