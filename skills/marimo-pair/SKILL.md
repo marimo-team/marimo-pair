@@ -78,8 +78,53 @@ from notebook cells it causes to run, including reactive descendants.
 
 ### Ordinary Python
 
+**Match your first move to the request type:**
+
+**Minimize scratchpad round-trips** — each `execute-code` call is a model
+  turn. Combine related computations into one script that prints all results
+  together. Never make a separate call just to print or verify a value you
+  could have printed in the previous call.
+
+**No planning-only turns** — every model turn must either execute code or
+  deliver the final answer. Never spend a turn on text-only reasoning,
+  outlining what you plan to compute, or narrating your analysis strategy.
+  Fold planning into the same turn as the scratchpad call it informs.
+
+- **Directed request** — the task names the specific columns, variables, or
+  metrics to produce. Read all requirements first and write a single script
+  that inspects the data AND computes every required value; print all results
+  together. Skip standalone structure exploration (shape, dtypes, head) and go
+  straight to computing the answers. One comprehensive call is far better than
+  incremental exploration across multiple turns.
+- **Open-ended request** — the task asks you to explore, investigate, or
+  decide yourself what is worth reporting. There, exploration is the
+  foundation of the deliverable: inspect structure and coverage first (shape,
+  dtypes, key distributions, date/category coverage), let what you find steer
+  what you compute, and only then write findings. Do NOT compress this into
+  one blind pass — a fast report built on unexamined assumptions is a failed
+  report. Batching *within* a step is still good; skipping the looking is not.
+  Aim for 2–3 scratchpad calls total: (1) explore structure AND compute
+  first-pass analysis together (shape, dtypes, key distributions, initial
+  counts/aggregations — these naturally fit one script), (2) deeper analysis
+  steered by what you found, (3) any remaining follow-ups. Do not make a
+  separate call per analysis dimension — combine them.
+
+**Broad briefs get deepening, not extra calls** — when an open-ended request
+spans multiple axes at once (characterize/overview/"key structural findings"
+covering a whole dataset or several dimensions together), fold second-order
+metrics (enrichment/lift vs baseline, distributions instead of single
+aggregates, cross-dimension breakdowns) into the same 2–3 call budget as
+scoped requests. Design call 2 to deepen the most promising threads from
+call 1 *and* compute any remaining first-pass dimensions together. Do NOT
+add a separate deepening pass — a well-designed second call covers both.
+
 Use ordinary Python in the scratchpad to inspect variables, sample data, test
 transformations, probe APIs, check imports, and read widget state.
+
+**Plan before calling (directed requests)** — when the task lists specific
+variables to define, read every requirement first and write one scratchpad
+call that computes all of them. The task description tells you what to
+compute; use that to write comprehensive code in a single turn.
 
 ```python
 print(df.head())
@@ -90,6 +135,29 @@ print(x)
 
 Here `df` comes from notebook globals, while `x` is a scratchpad-local binding.
 `x` exists for this call only and WILL NOT be added to notebook globals.
+
+### Verify What You Report
+
+Every number in a final answer or report must come from computation you
+actually ran in this session:
+
+- **Count, don't assume.** Dataset constants — weeks per year, row counts,
+  distinct categories, date coverage — must be measured from the data
+  (`nunique()`, `value_counts()`, min/max), never assumed from the calendar or
+  from convention. A 53-week year or a partial year silently corrupts every
+  figure derived from it.
+- **No uncomputed comparisons.** Never write "roughly 2×" or "nearly double"
+  unless you computed that ratio. State the computed value or leave the
+  comparison out.
+- **Check before you characterize.** Before asserting a pattern (top-N
+  ranking, share, trend), print the underlying values and confirm the claim
+  matches what you see.
+
+Speed never justifies an unverified claim — but a *separate* verification
+call is rarely needed. Print verification values (sanity checks, totals,
+cross-tabs) inline at the end of the same script that computes them. A
+wrong number in a delivered report is expensive; an extra model turn to
+re-print what you already computed is pure waste.
 
 ### Persist with `cm`
 
@@ -232,6 +300,19 @@ dependencies, and UI model. Don't be lazy. Avoid one-off workarounds that pass
 `cm` validation but leave a brittle notebook.
 
 ### Cell Bodies
+
+**Batch cell operations** — create all cells in a single `execute-code`
+call with one `async with cm.get_context()` block. Multiple `create_cell` and
+`run_cell` calls can be queued in the same block. Do NOT spread cell creation
+across multiple turns.
+
+```python
+async with cm.get_context() as ctx:
+    c1 = ctx.create_cell("n_nodes = len(nodes)", hide_code=False)
+    c2 = ctx.create_cell("n_edges = len(edges)", hide_code=False)
+    ctx.run_cell(c1)
+    ctx.run_cell(c2)
+```
 
 Submit the code that belongs in the cell.
 
