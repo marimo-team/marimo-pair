@@ -39,7 +39,7 @@ names, and cycles are caught before any graph mutation occurs.
 
 | Operation | Method | Notes |
 |-----------|--------|-------|
-| Execute code (scratchpad) | Via `execute-code.sh` or MCP | Results return to Claude, not user |
+| Execute code (scratchpad) | Via `execute_code.py` or MCP | Results return to Claude, not user |
 | Execute cell | `ctx.run_cell(cell_id)` | Explicitly queue execution; `create_cell` / `edit_cell` are structural only and do not auto-execute |
 
 ### Package Management
