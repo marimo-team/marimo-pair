@@ -45,8 +45,11 @@ The same single-definition rule applies to imports: a public name (like `pd`)
 can only be defined in one cell. If two cells both `import pandas as pd`, you
 get a `Multiply-defined names` error at validation.
 
-**Fix:** Use a `_` prefix on the second import (`import pandas as _pd`) or
-consolidate imports into a shared cell.
+**Fix:** Reuse the existing import — reference `pd` directly, or edit the
+owning cell (`ctx.edit_cell`) if the import belongs there instead. If several
+cells each need their own copy, consolidate them into the setup cell or a
+shared import-only cell (see
+[notebook-improvements.md](notebook-improvements.md#setup-cell)).
 
 ## `inspect.getsource()` on methods is indented
 
