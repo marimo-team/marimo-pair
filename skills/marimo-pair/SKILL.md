@@ -252,8 +252,8 @@ A cell is also a rerun boundary. Put expensive or reusable computation
 upstream of presentation so UI edits stay cheap. Keep cheap,
 presentation-specific work with the view when that is easier to read.
 
-Use `mo.vstack` and `mo.hstack` when the composition is part of the UI. Plain
-narrative often reads better in an adjacent markdown cell.
+Use `mo.vstack` and `mo.hstack` only when the composition is part of the UI.
+Narrative often reads better in an adjacent markdown cell.
 
 ### Prefer `cm`-Managed Changes
 
