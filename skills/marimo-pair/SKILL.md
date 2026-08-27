@@ -177,32 +177,10 @@ a directed acyclic graph (DAG):
 These rules keep the kernel, UI, and saved artifact consistent.
 
 When `cm` submits a cell body, marimo parses its top-level definitions and
-references. A top-level name enters the graph unless it is private with a
-leading underscore.
-
-```python
-# Public definitions: values, total, i, value, mean
-values = np.array([1, 2, 3])
-total = 0
-for i, value in enumerate(values):
-    total += value
-mean = total / len(values)
-mean
-```
-
-```python
-# Public definition: mean
-_values = np.array([1, 2, 3])
-_total = 0
-for _i, _value in enumerate(_values):
-    _total += _value
-mean = _total / len(_values)
-mean
-```
-
-Use private names for intermediates that no other cell should read. Public
-names define the notebook-level dataflow. If a `cm` edit violates the contract,
-marimo rejects the structural change and returns the validation error.
+references. Public names enter the graph. Names that start with `_` are local
+to their cell and unavailable to other cells. If a `cm` edit violates the
+contract, marimo rejects the structural change and returns the validation
+error.
 
 ## The Notebook's Shape
 
@@ -261,15 +239,21 @@ Submit the code that belongs in the cell.
   `ctx.cells[...]` and submit the full replacement.
 - **Reuse notebook imports** - if `np` already exists, use it or edit the owning
   import cell. DO NOT add `import numpy as _np` just to bypass the graph.
-- **Define public names intentionally** - use public names for values later
-  cells should reference. Use private `_name` bindings or function locals for
-  same-cell intermediates.
 - **Define each public name once** - a public name has one owning cell.
   Reassigning it in another cell fails with `Multiply-defined names`; edit the
   owning cell or give the result a new name. See
   [gotchas.md](reference/gotchas.md).
 - **Run cells deliberately** - `create_cell` and `edit_cell` change structure
   only. Queue `ctx.run_cell(...)` when the cell should execute.
+
+### Cell Boundaries
+
+A cell is also a rerun boundary. Put expensive or reusable computation
+upstream of presentation so UI edits stay cheap. Keep cheap,
+presentation-specific work with the view when that is easier to read.
+
+Use `mo.vstack` and `mo.hstack` when the composition is part of the UI. Plain
+narrative often reads better in an adjacent markdown cell.
 
 ### Prefer `cm`-Managed Changes
 
