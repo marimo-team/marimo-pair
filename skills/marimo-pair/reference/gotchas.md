@@ -35,7 +35,6 @@ df = df.dropna()               # Multiply-defined names: df
 
 - **Edit the owning cell** if the step belongs there (`ctx.edit_cell`).
 - **Use a new name** when later cells need the result (`clean = df.dropna()`).
-- **Use a private `_` name** for a throwaway intermediate (`_clean = df.dropna()`).
 
 `ctx.graph.cells[cid].defs` shows what a cell already owns.
 

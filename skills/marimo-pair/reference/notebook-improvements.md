@@ -11,6 +11,18 @@ functions/classes are auto-named by marimo. Beyond that, naming is optional.
 Note that naming markdown cells clutters the UI by showing the cell header
 that's normally hidden.
 
+## Review dataflow names
+
+Review names after the cells work and their dependencies are visible.
+
+- Keep values consumed by later cells public.
+- Inline small one-use bindings.
+- Move dense procedural work into a function.
+- Use a private top-level binding when it makes one cell easier to read.
+
+Many private names can mean that a useful stage is hidden or that a cell is
+doing too much. Treat this as a prompt to inspect, not a rule.
+
 ## Setup cell
 
 A setup cell is named `"setup"` and is guaranteed to run before all other
