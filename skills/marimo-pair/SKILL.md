@@ -173,6 +173,7 @@ a directed acyclic graph (DAG):
 - **No cycles** - cells cannot depend on each other in a cycle.
 - **No public redefinitions across cells** - each name has one owning cell.
 - **No wildcard imports** - `import *` prevents static analysis of definitions.
+- **No mutations of variables outside of their origin cell** - marimo does not track mutations to objects. Only mutate an object in the cell that creates it, or create new objects instead of mutating existing ones.
 
 These rules keep the kernel, UI, and saved artifact consistent.
 
