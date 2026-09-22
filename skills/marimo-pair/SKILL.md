@@ -5,7 +5,7 @@ description: >-
   the user does, inspect live notebook state, and commit durable notebook
   changes. Use when the user wants to start a marimo notebook or pair on an
   active marimo session.
-allowed-tools: Bash(bash **/scripts/discover-servers.sh *), Bash(bash **/scripts/execute-code.sh *), Read
+allowed-tools: Bash(python **/scripts/discover_servers.py *), Bash(python **/scripts/execute_code.py *), Read
 ---
 
 marimo is a reactive Python runtime for building reproducible Python programs
@@ -34,7 +34,7 @@ replace `/absolute/path/to/marimo-pair` with that directory.
 Start every code-mode session with this dedicated command:
 
 ```bash
-bash /absolute/path/to/marimo-pair/scripts/execute-code.sh \
+python /absolute/path/to/marimo-pair/scripts/execute_code.py \
   --url http://localhost:2718 \
   -c "import marimo._code_mode as cm; help(cm)"
 ```
@@ -49,14 +49,14 @@ Do not run task-specific `cm` code before the inspection command succeeds.
 
 ## Connect to a Notebook
 
-Use the bundled `execute-code.sh` from the reported skill directory or MCP
+Use the bundled `execute_code.py` from the reported skill directory or MCP
 (`execute_code(...)`) to run Python in a live marimo kernel.
 
-`execute-code.sh` always takes `--url`. If the user provides a notebook URL,
+`execute_code.py` always takes `--url`. If the user provides a notebook URL,
 run the required inspection against it directly:
 
 ```bash
-bash /absolute/path/to/marimo-pair/scripts/execute-code.sh \
+python /absolute/path/to/marimo-pair/scripts/execute_code.py \
   --url http://localhost:2718 \
   -c "import marimo._code_mode as cm; help(cm)"
 ```
@@ -65,7 +65,7 @@ After that command succeeds, pass task code with `-c CODE`, `-` for stdin, or
 a file path:
 
 ```bash
-bash /absolute/path/to/marimo-pair/scripts/execute-code.sh \
+python /absolute/path/to/marimo-pair/scripts/execute_code.py \
   --url http://localhost:2718 - <<'PY'
 import marimo._code_mode as cm
 
@@ -76,7 +76,7 @@ PY
 ```
 
 If the user gives no URL, find or start a notebook. Look for a running server
-with `bash /absolute/path/to/marimo-pair/scripts/discover-servers.sh`, MCP
+with `python /absolute/path/to/marimo-pair/scripts/discover_servers.py`, MCP
 `list_sessions()`, or local process context, and pass the `url` it reports to
 `--url`. With one notebook open, the script targets it automatically; with
 several, pass `--file` with the notebook's file key.
