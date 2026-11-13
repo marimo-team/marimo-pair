@@ -54,6 +54,23 @@ To opt in to auto-updates (recommended), so you always get the latest version:
 /plugin → Marketplaces → marimo-pair → Enable auto-update
 ```
 
+### OpenCode (HTTP catalog)
+
+Point the `skills` entry in your `opencode.jsonc` (global or project) at the
+catalog URL:
+
+```jsonc
+{
+  "skills": [
+    "https://raw.githubusercontent.com/marimo-team/marimo-pair/main/skills/"
+  ]
+}
+```
+
+OpenCode downloads the skill files listed in `skills/index.json` under that
+URL and refreshes its cache whenever the catalog version changes — which
+happens automatically on every release, so no manual update is needed.
+
 ## FAQ
 
 ### I keep getting prompted to allow Bash commands
