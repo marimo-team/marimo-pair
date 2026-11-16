@@ -1,0 +1,26 @@
+{
+  "skills": [
+    {
+      "name": "marimo-pair",
+      "version": "0.0.20",
+      "files": [
+        "SKILL.md",
+        "reference/execution-context.md",
+        "reference/finding-marimo.md",
+        "reference/gotchas.md",
+        "reference/notebook-improvements.md",
+        "reference/rich-representations.md",
+        "scripts/discover-servers.sh",
+        "scripts/execute-code.sh"
+      ]
+    },
+    {
+      "name": "retro-marimo-pair",
+      "version": "0.0.20",
+      "files": [
+        "SKILL.md",
+        "reference/code-mode-surface.md"
+      ]
+    }
+  ]
+}
