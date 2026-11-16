@@ -1,6 +1,6 @@
 # Connection Troubleshooting
 
-Use this reference when `execute-code.sh` or MCP cannot reach the intended
+Use this reference when `execute_code.py` or MCP cannot reach the intended
 marimo session, cannot select a session, or fails because code was passed
 incorrectly.
 
@@ -18,7 +18,7 @@ incorrectly.
 For token-authenticated servers, prefer `MARIMO_TOKEN`.
 
 ```bash
-MARIMO_TOKEN=... bash scripts/execute-code.sh --url http://localhost:2718 -c "1 + 1"
+MARIMO_TOKEN=... python scripts/execute_code.py --url http://localhost:2718 -c "1 + 1"
 ```
 
 `--token` also works, but may expose the token in process listings. If both are
@@ -30,18 +30,18 @@ present, `--token` overrides `MARIMO_TOKEN`. The script sends the token as
 Pass code with `-c CODE`, `-` for stdin, or a file path.
 
 ```bash
-bash scripts/execute-code.sh --url http://localhost:2718 - <<'PY'
+python scripts/execute_code.py --url http://localhost:2718 - <<'PY'
 print(df.head())
 PY
 ```
 
 ```bash
-bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
+python scripts/execute_code.py --url http://localhost:2718 /tmp/code.py
 ```
 
 ## Common Script Errors
 
-- **`[]` from discover-servers.sh** - nothing is registered. Only servers
+- **`[]` from discover_servers.py** - nothing is registered. Only servers
   started with `--no-token` register; otherwise ask the user for the URL, or
   start marimo with the project's normal tooling.
 - **No active sessions on the server** - open the notebook in the browser.
@@ -57,9 +57,7 @@ bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
 - **... is running on the Windows host but answered at no address reachable
   from WSL** - WSL's network cannot reach it. The message lists the fixes; the
   usual one is restarting marimo on the host with `--host 0.0.0.0`. Running the
-  scripts from Git Bash or PowerShell on the Windows side also works.
-- **needs jq / curl on PATH** - install them in whichever environment runs the
-  scripts. Inside WSL that means the distro, not Windows.
+  scripts from PowerShell or another terminal on the Windows side also works.
 - **SyntaxError** - the submitted Python was malformed; use a heredoc or file.
 - **ImportError** - diagnose in the notebook kernel. Install packages through
   `cm` when needed.

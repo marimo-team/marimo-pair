@@ -24,7 +24,7 @@ on Linux and macOS, `%USERPROFILE%\.marimo\servers` on Windows.
 
 Inside WSL, both are in play. A notebook started in the distro registers at the
 XDG path; one started on the Windows host registers in the Windows profile,
-which `discover-servers.sh` also reads. Windows-host servers show up with
+which `discover_servers.py` also reads. Windows-host servers show up with
 `"origin": "windows-host"`, and reaching them depends on WSL networking: under
 the default NAT the distro has its own loopback, so a host notebook bound to
 `127.0.0.1` is unreachable and only `--host 0.0.0.0` (or mirrored networking)
