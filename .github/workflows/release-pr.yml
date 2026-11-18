@@ -28,12 +28,12 @@ jobs:
           node-version: 24
       - name: Prepare versions
         id: version
-        uses: marimo-team/internal-gh-actions/prepare-release@SHARED_SHA
+        uses: marimo-team/internal-gh-actions/prepare-release@36a2bd9a76109b91c9dc0bc65bfab95c9b632a3b
         with:
           version: ${{ inputs.version }}
       - name: Open release PR
         id: pr
-        uses: marimo-team/internal-gh-actions/release-pr@SHARED_SHA
+        uses: marimo-team/internal-gh-actions/release-pr@36a2bd9a76109b91c9dc0bc65bfab95c9b632a3b
         with:
           app-id: ${{ vars.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
