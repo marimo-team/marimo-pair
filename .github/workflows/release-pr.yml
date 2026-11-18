@@ -13,7 +13,7 @@ concurrency:
 jobs:
   prepare:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     environment: release
     timeout-minutes: 15
     permissions:
