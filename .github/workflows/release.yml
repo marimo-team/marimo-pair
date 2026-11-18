@@ -1,62 +1,24 @@
 name: Release
-
 on:
-  workflow_dispatch:
-    inputs:
-      bump:
-        description: "Version bump type"
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-
+  push:
+    tags: ['v*']
+permissions: {}
 jobs:
   release:
-    runs-on: "${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}"
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: main
-
-      - name: Bump version
-        id: bump
-        run: |
-          current=$(jq -r '.metadata.version' .claude-plugin/marketplace.json)
-          IFS='.' read -r major minor patch <<< "$current"
-
-          if [ "${{ inputs.bump }}" = "minor" ]; then
-            minor=$((minor + 1))
-            patch=0
-          else
-            patch=$((patch + 1))
-          fi
-
-          new="${major}.${minor}.${patch}"
-          echo "version=${new}" >> "$GITHUB_OUTPUT"
-
-          jq --arg v "$new" '.metadata.version = $v' .claude-plugin/marketplace.json > tmp.json
-          mv tmp.json .claude-plugin/marketplace.json
-
-          jq --arg v "$new" '.version = $v' .codex-plugin/plugin.json > tmp.json
-          mv tmp.json .codex-plugin/plugin.json
-
-      - name: Commit and tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/marketplace.json .codex-plugin/plugin.json
-          git commit -m "Release v${{ steps.bump.outputs.version }}"
-          git tag "v${{ steps.bump.outputs.version }}"
-          git push origin main --tags
-
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check plugin versions
+        run: python3 scripts/release-metadata.py
+      - uses: marimo-team/internal-gh-actions/validate-release@3a52681ab8e200a34175ec8e5d14985e4e7ce3c3
+        with:
+          manifest: .codex-plugin/plugin.json
       - name: Create GitHub release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "v${{ steps.bump.outputs.version }}" \
-            --title "v${{ steps.bump.outputs.version }}" \
-            --generate-notes
-permissions: {}
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
