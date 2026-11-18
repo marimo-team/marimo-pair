@@ -1,0 +1,51 @@
+name: Prepare release PR
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable X.Y.Z version or patch, minor, major
+        type: string
+        required: true
+permissions: {}
+concurrency:
+  group: prepare-release-pr
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Prepare versions
+        id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          python3 scripts/release-metadata.py "$REQUESTED_VERSION" > "$RUNNER_TEMP/release-manifest.json"
+          echo "version=$(node -p "require(process.env.RUNNER_TEMP + '/release-manifest.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Open release PR
+        id: pr
+        uses: marimo-team/internal-gh-actions/release-pr@3a52681ab8e200a34175ec8e5d14985e4e7ce3c3
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          manifest: .codex-plugin/plugin.json
+          version: ${{ steps.version.outputs.version }}
+          files: |
+            .codex-plugin/plugin.json
+            .claude-plugin/marketplace.json
+      - name: Link release PR
+        env:
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          echo "$PR_URL" >> "$GITHUB_STEP_SUMMARY"
