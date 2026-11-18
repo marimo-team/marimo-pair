@@ -28,22 +28,19 @@ jobs:
           node-version: 24
       - name: Prepare versions
         id: version
-        env:
-          REQUESTED_VERSION: ${{ inputs.version }}
-        run: |
-          python3 scripts/release-metadata.py "$REQUESTED_VERSION" > "$RUNNER_TEMP/release-manifest.json"
-          echo "version=$(node -p "require(process.env.RUNNER_TEMP + '/release-manifest.json').version")" >> "$GITHUB_OUTPUT"
+        uses: marimo-team/internal-gh-actions/prepare-release@SHARED_SHA
+        with:
+          version: ${{ inputs.version }}
       - name: Open release PR
         id: pr
-        uses: marimo-team/internal-gh-actions/release-pr@3a52681ab8e200a34175ec8e5d14985e4e7ce3c3
+        uses: marimo-team/internal-gh-actions/release-pr@SHARED_SHA
         with:
           app-id: ${{ vars.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          manifest: .codex-plugin/plugin.json
+          current-version: ${{ steps.version.outputs.current-version }}
+          manifest: ${{ steps.version.outputs.manifest }}
           version: ${{ steps.version.outputs.version }}
-          files: |
-            .codex-plugin/plugin.json
-            .claude-plugin/marketplace.json
+          files: ${{ steps.version.outputs.files }}
       - name: Link release PR
         env:
           PR_URL: ${{ steps.pr.outputs.url }}
