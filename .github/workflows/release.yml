@@ -5,7 +5,7 @@ on:
 permissions: {}
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     permissions:
       contents: write
     steps:
