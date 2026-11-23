@@ -8,15 +8,15 @@ description: >-
 marimo is a reactive Python notebook. You and the user share a live kernel.
 When a cell runs, marimo reruns the cells that depend on its variables.
 
-> **WARNING. The active runtime is the source of truth.** Work in the running
-> notebook through `marimo pair` or your agent’s notebook tools. Direct edits to the `.py` file may never appear in the user's
-> UI, and the kernel can overwrite them on save.
+> **WARNING. The active runtime is the source of truth.** Use the Pair CLI
+> (`marimo pair`) or MCP to work in the running notebook. Direct edits to
+> the `.py` file may never appear in the user's UI, and the kernel can
+> overwrite them on save.
 
 ## Pair with the user's notebook
 
-Use the notebook tools already available to your agent, or run `marimo pair`
-from the shell. Match the notebook by name or path. If several match,
-ask which one the user means.
+Match the notebook by name or path. If several match, ask which one the
+user means.
 
 With the CLI, list running notebooks and pass the selected ID to `execute`:
 
