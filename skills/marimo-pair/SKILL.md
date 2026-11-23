@@ -17,8 +17,7 @@ When a cell runs, marimo reruns the cells that depend on its variables.
 
 Use the notebook's launcher or `uvx marimo@latest pair`.
 
-- Run `marimo pair list` if you need its ID. Match the
-  name or path. Ask the user if several match.
+- Run `marimo pair list` to find the notebook ID.
 - Local notebooks authenticate automatically. For remote notebooks, pass
   `--url SERVER_URL` to both `list` and `execute`. Include `--token-file TOKEN_PATH`
   on both commands if a token file is supplied. [Connection troubleshooting](reference/execution-context.md)
