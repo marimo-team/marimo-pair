@@ -55,9 +55,10 @@ marimo pair execute --url https://notebooks.example.org --token-file ./token \
 
 ## Work in the notebook
 
-Each Pair call runs Python in a fresh scratchpad with access to the notebook’s
-variables. Assigning a name in the scratchpad binds it only for that call.
-Use Code Mode to define variables in a notebook cell.
+Each execution runs Python in a fresh scratchpad scope inside the notebook’s
+kernel. You can read variables defined in notebook cells, and any names you
+assign are local to that execution. Use Code Mode to define variables in a
+notebook cell.
 
 ### Inspect notebook state
 
