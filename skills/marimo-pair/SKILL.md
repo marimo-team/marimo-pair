@@ -135,21 +135,19 @@ for package in cm.get_context().packages.list():
     print(package.name, package.version)
 ```
 
-If a cell named `load_data` failed because it couldn’t import Polars, add
-the package and rerun that cell. marimo installs the package before running
-the cell when the block exits.
+If an import fails because Polars is missing, install it in its own Pair
+call. Check the result before editing or rerunning the cell in a later call.
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     ctx.packages.add("polars")
-    ctx.run_cell("load_data")
 ```
 
-To uninstall a package the notebook no longer needs, call
-`ctx.packages.remove("polars")` inside an `async with` block. To check the
-installed versions after a change, call `list()` in a fresh context.
+Use `ctx.packages.remove("polars")` in its own call to uninstall it.
+Package changes take effect when the block exits. To see the updated
+versions, list packages again in a fresh call.
 
 ### Explore the API
 
