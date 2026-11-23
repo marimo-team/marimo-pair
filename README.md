@@ -11,8 +11,10 @@
   <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
 </div>
 
-The [marimo-pair skill](skills/marimo-pair/SKILL.md) lets your coding agent
-inspect data and edit cells alongside you in a live marimo notebook.
+The [marimo-pair skill](skills/marimo-pair/SKILL.md) teaches your coding agent
+how to start a marimo notebook or connect to one you already have open. Your
+agent pairs with you through the Pair CLI (`marimo pair`) or MCP to inspect
+data and edit cells in the same notebook.
 
 ## Prerequisites
 
