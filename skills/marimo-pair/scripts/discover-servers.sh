@@ -16,7 +16,7 @@
 # Pass `url` straight to execute-code.sh --url.
 set -euo pipefail
 
-echo 'For marimo 0.26+, use `marimo pair list`.' >&2
+echo 'Warning: The current marimo-pair skill uses `marimo pair list` (marimo 0.26+). Continuing with discover-servers.sh for older pairing prompts.' >&2
 
 missing=""
 for tool in jq curl; do

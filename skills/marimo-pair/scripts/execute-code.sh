@@ -13,7 +13,7 @@
 # Auth: set MARIMO_TOKEN env var (preferred) or pass --token TOKEN (visible in ps).
 set -euo pipefail
 
-echo 'For marimo 0.26+, use `marimo pair execute`.' >&2
+echo 'Warning: The current marimo-pair skill uses `marimo pair execute` (marimo 0.26+). Continuing with execute-code.sh for older pairing prompts.' >&2
 
 usage() {
   echo "Usage: execute-code.sh --url URL [--file PATH | --session ID] -c 'code'" >&2
