@@ -18,9 +18,9 @@ open, where you can both inspect data, edit cells, and see the results.
 
 ## Prerequisites
 
-Install marimo 0.26 or newer, or use uv to run it with `uvx marimo@latest`.
+marimo 0.26 or newer, or uv.
 
-## Install the agent skill
+## Install
 
 ### Agent Skills (any tool)
 
