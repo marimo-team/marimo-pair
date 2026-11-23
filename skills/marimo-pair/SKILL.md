@@ -125,8 +125,10 @@ To change the default for future runs, edit the cell that creates the widget.
 
 ### Manage notebook packages
 
-Use `ctx.packages` to see which packages and versions are installed in the
-notebook’s Python environment.
+Use a separate Pair call for each package change. Check the result before
+editing or running a cell that depends on it.
+
+**List installed packages and versions**
 
 ```python
 import marimo._code_mode as cm
@@ -135,8 +137,7 @@ for package in cm.get_context().packages.list():
     print(package.name, package.version)
 ```
 
-If an import fails because Polars is missing, install it in its own Pair
-call. Check the result before editing or rerunning the cell in a later call.
+**Install a package**
 
 ```python
 import marimo._code_mode as cm
@@ -145,9 +146,14 @@ async with cm.get_context() as ctx:
     ctx.packages.add("polars")
 ```
 
-Use `ctx.packages.remove("polars")` in its own call to uninstall it.
-Package changes take effect when the block exits. To see the updated
-versions, list packages again in a fresh call.
+**Remove a package**
+
+```python
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx.packages.remove("polars")
+```
 
 ### Explore the API
 
