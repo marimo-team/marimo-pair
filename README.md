@@ -13,9 +13,7 @@
 
 ## Prerequisites
 
-Pair through the `marimo pair` CLI or marimo's code-mode MCP server. For
-MCP, install `marimo[mcp]`, start the notebook with `--mcp code-mode`, and
-connect your agent to its `/mcp/server` endpoint.
+Pair using your agent’s marimo MCP tools or the `marimo pair` CLI.
 
 For the CLI workflow, use [marimo](https://marimo.io) 0.26 or newer for both
 the notebook and CLI. Use the command in the notebook’s pairing prompt or

@@ -9,33 +9,30 @@ marimo is a reactive Python notebook. You and the user share a live kernel.
 When a cell runs, marimo reruns the cells that depend on its variables.
 
 > **WARNING. The active runtime is the source of truth.** Use the
-> `marimo pair` CLI or marimo's code-mode MCP tools to work in the running
+> `marimo pair` CLI or the available marimo MCP tools to work in the running
 > notebook. Direct edits to the `.py` file may never appear in the user's
 > UI, and the kernel can overwrite them on save.
 
 ## Pair with the user's notebook
 
-Use the interface available to your agent. Both run Python in the notebook's
-scratchpad. Match the requested notebook by name or path. If several match,
-ask the user which one they mean.
+Use the marimo MCP tools if your agent has them. Otherwise, use the
+`marimo pair` CLI. Match the notebook by name or path. If several match,
+ask which one the user means.
 
-| Interface | Find the notebook | Run Python |
-| --- | --- | --- |
-| CLI | `marimo pair list` | `marimo pair execute --notebook NOTEBOOK_ID --code 'print("hello")'` |
-| Code-mode MCP | Call `list_sessions()` | Call `execute_code(session_id=..., code='print("hello")')` with the returned session ID |
+With the CLI, list running notebooks and pass the selected ID to `execute`:
 
-**CLI.** Use the notebook's launcher, or `uvx marimo@latest pair` for a
-standalone CLI. If you have a notebook ID, pass it directly. For a remote
+```sh
+marimo pair list
+marimo pair execute --notebook NOTEBOOK_ID --code 'print("hello")'
+```
+
+Use the notebook's launcher, or `uvx marimo@latest pair` for a standalone
+CLI. If you already have the notebook ID, pass it directly. For a remote
 server, include its `--url` in both commands. Pass multiline Python with
-`--file PATH` or `--file -` for stdin. See `marimo pair --help` for options,
-including agent inbox connections. [Connection troubleshooting](reference/execution-context.md)
+`--file PATH` or `--file -` for stdin. [Connection troubleshooting](reference/execution-context.md)
 
-**Starting a notebook.** Run `marimo edit notebook.py` to open or create
-the file. Include `--sandbox` for inline dependencies. To serve the
-code-mode MCP tools, use `marimo edit notebook.py --mcp code-mode` with
-`marimo[mcp]` installed and connect the agent to the server's `/mcp/server`
-endpoint. Once the notebook is open, discover it through your chosen
-interface. [Startup options](reference/finding-marimo.md)
+**Starting a notebook.** Run `marimo edit notebook.py` to open or create the
+file. Include `--sandbox` for inline dependencies. [Startup options](reference/finding-marimo.md)
 
 ## Show a scratchpad result in the notebook
 
@@ -46,8 +43,7 @@ a lasting transformation, edit the cell that owns the value or define a new
 value in a downstream cell.
 
 To show the preview in the notebook, give a cell the expression `df.head()`
-and run it. Pass the Python below to `marimo pair execute` or the MCP tool
-`execute_code`.
+and run it from the scratchpad.
 
 ```python
 import marimo._code_mode as cm
