@@ -13,11 +13,18 @@
 
 ## Prerequisites
 
-- A running [marimo](https://marimo.io) notebook (`--no-token` for
-  auto-discovery; `MARIMO_TOKEN` env var for servers with auth)
-- `bash`, `curl`, and `jq` available on `PATH` (on Windows, run from
-  Git Bash, or from WSL with those tools installed in the distro — the
-  scripts also find notebooks running on the Windows host)
+Use [marimo](https://marimo.io) 0.26 or newer for the running notebook and CLI.
+Follow the command in the notebook’s pairing prompt. For a standalone CLI,
+we recommend the latest release.
+
+```sh
+uvx marimo@latest pair --help
+# Or with pixi
+pixi exec --force-reinstall marimo pair --help
+```
+
+In a pixi project that includes marimo, `pixi run marimo pair --help` uses the
+project’s version.
 
 ## Install
 
@@ -52,26 +59,6 @@ To opt in to auto-updates (recommended), so you always get the latest version:
 
 ```
 /plugin → Marketplaces → marimo-pair → Enable auto-update
-```
-
-## FAQ
-
-### I keep getting prompted to allow Bash commands
-
-The skill declares its own `allowed-tools`, but Claude Code may still prompt
-you to approve each Bash call. To avoid repeated prompts, copy the absolute
-paths to the scripts from the installed skill and add them to your
-`.claude/settings.json` (project-level) or `~/.claude/settings.json` (global):
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(bash /path/to/skills/marimo-pair/scripts/discover-servers.sh *)",
-      "Bash(bash /path/to/skills/marimo-pair/scripts/execute-code.sh *)"
-    ]
-  }
-}
 ```
 
 ## Contributing

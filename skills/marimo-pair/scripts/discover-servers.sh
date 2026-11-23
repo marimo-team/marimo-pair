@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Legacy. Use `marimo pair list`.
 # List running marimo instances from the server registry.
 # Cleans up stale entries and outputs live servers as JSON.
 # No marimo installation required.

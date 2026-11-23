@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Legacy. Use `marimo pair execute`.
 # Execute code in a running marimo session's scratchpad.
 # No marimo installation required — talks directly to the HTTP API.
 # Usage:

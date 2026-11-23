@@ -1,70 +1,58 @@
-# Connection Troubleshooting
+# Connection troubleshooting
 
-Use this reference when `execute-code.sh` or MCP cannot reach the intended
-marimo session, cannot select a session, or fails because code was passed
-incorrectly.
+## Find the intended notebook
 
-## Targeting
+Use `marimo pair list` for local discovery. If the user gives a server URL,
+preserve its base path and pass it to `list`. Use the same URL and notebook
+ID for execution. A URL alone selects a notebook only when exactly one is
+open on that server.
 
-- Pass the discovered `--url` unchanged; `null` means no address was reachable.
-- With one open notebook, the script resolves its session.
-- Use `--file` for an exact, stable file key or path. It resolves the current
-  session on every call.
-- Use `--session` for an exact active session ID; it goes stale on reconnect.
-- The selectors are mutually exclusive. Preserve supplied values; never guess.
-
-## Auth
-
-For token-authenticated servers, prefer `MARIMO_TOKEN`.
-
-```bash
-MARIMO_TOKEN=... bash scripts/execute-code.sh --url http://localhost:2718 -c "1 + 1"
+```sh
+marimo pair list --url SERVER_URL
+marimo pair execute --url SERVER_URL --notebook NOTEBOOK_ID --code 'print(1 + 1)'
 ```
 
-`--token` also works, but may expose the token in process listings. If both are
-present, `--token` overrides `MARIMO_TOKEN`. The script sends the token as
-`Authorization: ******` on session discovery and code execution requests.
+If the notebook is missing, check the listing's warnings. A running server
+can have no open notebook. Open the requested notebook in the browser and
+start its kernel, then list it again. For startup options, see
+[Finding and invoking marimo](finding-marimo.md).
 
-## Code Input
+If an existing connection supplies a stable session ID, keep using it with
+`execute --url SERVER_URL --session SESSION_ID`. Inbox connections use a
+notebook ID, which you can obtain with `pair list`.
 
-Pass code with `-c CODE`, `-` for stdin, or a file path.
+## Authenticate to the server
 
-```bash
-bash scripts/execute-code.sh --url http://localhost:2718 - <<'PY'
-print(df.head())
-PY
+Local discovery uses private credentials automatically. For a server that
+requires explicit credentials, use the supplied token file or the
+`MARIMO_TOKEN` environment variable. Keep token values out of command output.
+
+```sh
+marimo pair list --url SERVER_URL --token-file TOKEN_PATH
+marimo pair execute --url SERVER_URL --notebook NOTEBOOK_ID --token-file TOKEN_PATH --code 'print(1 + 1)'
 ```
 
-```bash
-bash scripts/execute-code.sh --url http://localhost:2718 /tmp/code.py
+If authentication fails, check the credentials for the same server. If the
+URL is unreachable, verify that the server is running and that the URL is
+reachable from the environment running the CLI.
+
+## Check an interrupted execution
+
+By default `execute` returns a JSON result. Read its `error` and `next` fields
+when it fails. If completion was unconfirmed, the code may already have run.
+Inspect the same notebook before taking another action. For example, after
+adding a cell, check its source and status:
+
+```sh
+marimo pair execute --notebook NOTEBOOK_ID --file - <<'PYTHON'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    for cell in ctx.cells:
+        print(cell.id, cell.code, cell.status, cell.errors)
+PYTHON
 ```
 
-## Common Script Errors
-
-- **`[]` from discover-servers.sh** - nothing is registered. Only servers
-  started with `--no-token` register; otherwise ask the user for the URL, or
-  start marimo with the project's normal tooling.
-- **No active sessions on the server** - open the notebook in the browser.
-- **No active session matches `--file`** - check the exact file key against the
-  available paths printed by the script.
-- **Multiple sessions on server** - several notebooks are open; rerun with the
-  `--file` path or `--session` ID shown for the notebook you want.
-- **Failed to connect** - check the URL, token, and whether the server is still
-  running.
-- **Execution did not complete** - the server ended the stream without a
-  result. With `--file`, retry the same command so it resolves the current
-  session. With `--session`, the ID is probably stale after a page refresh.
-- **... is running on the Windows host but answered at no address reachable
-  from WSL** - WSL's network cannot reach it. The message lists the fixes; the
-  usual one is restarting marimo on the host with `--host 0.0.0.0`. Running the
-  scripts from Git Bash or PowerShell on the Windows side also works.
-- **needs jq / curl on PATH** - install them in whichever environment runs the
-  scripts. Inside WSL that means the distro, not Windows.
-- **SyntaxError** - the submitted Python was malformed; use a heredoc or file.
-- **ImportError** - diagnose in the notebook kernel. Install packages through
-  `cm` when needed.
-
-## Starting marimo
-
-Discover first. If no server is running and the user wants a notebook, use
-[finding-marimo.md](finding-marimo.md).
+For remote notebooks include the same `--url` and authentication options.
+For a Python exception, inspect the kernel traceback. Use `--file -` or
+`--file PATH` for multiline input so shell quoting preserves the Python.
