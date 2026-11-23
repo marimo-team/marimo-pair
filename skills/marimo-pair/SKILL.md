@@ -123,16 +123,33 @@ widget.value = 10
 To change the default for future runs, edit the cell that creates the widget.
 [Custom widgets](reference/rich-representations.md)
 
-### Install a package
+### Manage notebook packages
 
-The notebook installs the package when the context exits.
+Use `ctx.packages` to see which packages and versions are installed in the
+notebook’s Python environment.
+
+```python
+import marimo._code_mode as cm
+
+for package in cm.get_context().packages.list():
+    print(package.name, package.version)
+```
+
+If a cell named `load_data` failed because it couldn’t import Polars, add
+the package and rerun that cell. marimo installs the package before running
+the cell when the block exits.
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     ctx.packages.add("polars")
+    ctx.run_cell("load_data")
 ```
+
+To uninstall a package the notebook no longer needs, call
+`ctx.packages.remove("polars")` inside an `async with` block. To check the
+installed versions after a change, call `list()` in a fresh context.
 
 ### Explore the API
 
