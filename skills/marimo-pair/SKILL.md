@@ -62,14 +62,15 @@ user's kernel, so work on a copy when experimenting with in-place mutations.
 
 ## Make a change the user can see
 
-**Create the preview.** Put the same `df.head()` expression in a cell and
-run it so the user sees the first five rows. Print the ID for the next edit.
+**Create the preview.** Choose an unused name such as `x` so other cells can
+reuse the preview. End the cell with `x` to display the first five rows.
+Print the cell ID for the next edit.
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("df.head()")
+    cid = ctx.create_cell("x = df.head()\nx")
     ctx.run_cell(cid)
 print(cid)
 ```
@@ -83,8 +84,8 @@ import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     cell = ctx.cells["CELL_ID"]
-    if cell.code == "df.head()":
-        ctx.edit_cell(cell.id, "df.head(10)")
+    if cell.code == "x = df.head()\nx":
+        ctx.edit_cell(cell.id, "x = df.head(10)\nx")
         ctx.run_cell(cell.id)
     else:
         print(cell.code)
