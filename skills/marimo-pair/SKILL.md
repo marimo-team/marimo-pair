@@ -24,36 +24,49 @@ authentication automatically. For a remote notebook, pass `--url SERVER_URL`
 to both `list` and `execute`. If a token file is supplied, pass
 `--token-file TOKEN_PATH` to both commands.
 
-To inspect the live cells, substitute the notebook ID below:
+**First scratchpad call in each kernel:** inspect the code-mode API with
+`help(cm)`. The installed notebook determines which methods are available.
+With the CLI, substitute the notebook ID below. With MCP, send the same
+Python to the notebook's scratchpad.
 
 ```sh
-marimo pair execute --notebook NOTEBOOK_ID --file - <<'PY'
-import marimo._code_mode as cm
-
-async with cm.get_context() as ctx:
-    for cell in ctx.cells:
-        print(cell.id, cell.code, cell.status)
-PY
+marimo pair execute --notebook NOTEBOOK_ID --code 'import marimo._code_mode as cm; help(cm)'
 ```
 
-Use `marimo pair --help` to discover commands and `marimo pair execute --help`
-for execution options. If you need to check a code-mode method, run
-`help(cm)` in the scratchpad after importing `marimo._code_mode as cm`.
+Use `--file -` for multiline Python on stdin or `--file PATH` for a local
+file. Each recipe below is a separate scratchpad call.
 [Connection troubleshooting](reference/execution-context.md)
 
 **Starting a notebook.** Run `marimo edit notebook.py` to open or create the
 file. Include `--sandbox` for inline dependencies. [Startup options](reference/finding-marimo.md)
 
-## Show a scratchpad result in the notebook
+## Inspect notebook state
 
-If the notebook defines `df`, run `print(df.head())` in the scratchpad.
-Scratchpad bindings last one call. Existing objects are shared, so an in-place
-mutation can affect the user's data. Work on a copy when experimenting. For
-a lasting transformation, edit the cell that owns the value or define a new
-value in a downstream cell.
+List the live cells to find the code the user is looking at and see whether it ran.
 
-To show the preview in the notebook, give a cell the expression `df.head()`
-and run it from the scratchpad.
+```python
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    for cell in ctx.cells:
+        print(cell.id, cell.code, cell.status, cell.errors)
+```
+
+## Inspect a live Python value
+
+Read notebook variables directly. For example, if the notebook defines `df`:
+
+```python
+print(df.head())
+```
+
+New scratchpad bindings last one call. Existing objects are shared with the
+user's kernel, so work on a copy when experimenting with in-place mutations.
+
+## Create and run a cell
+
+To show the preview in the notebook, put the expression in a cell and run it.
+Print its ID so you can find the same cell in a later call.
 
 ```python
 import marimo._code_mode as cm
@@ -61,12 +74,41 @@ import marimo._code_mode as cm
 async with cm.get_context() as ctx:
     cid = ctx.create_cell("df.head()")
     ctx.run_cell(cid)
+print(cid)
 ```
 
-When editing an existing cell, read `ctx.cells[cid].code` first so you
-preserve the user's latest work. Pass the full cell body to
-`ctx.edit_cell(cid, code)`, then queue `ctx.run_cell(cid)`. Check the cell's
-`errors` and `output` in a fresh call after it runs.
+## Edit an existing cell
+
+Use the ID from inspection. For example, expand the preview to ten rows
+only if the live cell still contains the code you inspected:
+
+```python
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    cell = ctx.cells["CELL_ID"]
+    if cell.code == "df.head()":
+        ctx.edit_cell(cell.id, "df.head(10)")
+        ctx.run_cell(cell.id)
+    else:
+        print(cell.code)
+```
+
+If the source changed, adapt the edit to the user's current code. Inspect
+`cell.errors` and `cell.output` in a fresh call to check the result. To
+rename a cell, pass `name="preview"` to `ctx.edit_cell`.
+
+## Install a package
+
+Use the notebook's package manager when the user asks to add a dependency.
+Installation happens when the context exits.
+
+```python
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx.packages.add("polars")
+```
 
 ## Change a widget's live value
 
