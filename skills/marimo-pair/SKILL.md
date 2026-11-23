@@ -15,32 +15,28 @@ When a cell runs, marimo reruns the cells that depend on its variables.
 
 ## Pair with the user's notebook
 
-Use the notebook's launcher, or `uvx marimo@latest pair`. If you already
-have the notebook ID, use it. Otherwise, run `marimo pair list` and match
-the name or path. If several match, ask which one the user means.
+Use the notebook's launcher or `uvx marimo@latest pair`.
 
-- **Local notebook.** The CLI handles authentication automatically.
-- **Remote notebook.** Pass `--url SERVER_URL` to both `list` and `execute`.
-  If a token file is supplied, pass `--token-file TOKEN_PATH` to both.
-- **Starting a notebook.** Run `marimo edit notebook.py` to open or create
-  the file. Include `--sandbox` for inline dependencies. [Startup options](reference/finding-marimo.md)
+- Run `marimo pair list` if you need its ID. Match the
+  name or path. Ask the user if several match.
+- Local notebooks authenticate automatically. For remote notebooks, pass
+  `--url SERVER_URL` to both `list` and `execute`. Include `--token-file TOKEN_PATH`
+  on both commands if a token file is supplied. [Connection troubleshooting](reference/execution-context.md)
+- Run `marimo edit notebook.py` to open or create a notebook. Add `--sandbox` for
+  inline dependencies. [Startup options](reference/finding-marimo.md)
 
-**Run `help(cm)` as your first scratchpad call in each kernel.** It shows
-the code-mode API available in that notebook. With the CLI, substitute the
-notebook ID below. With MCP, send the same Python to the scratchpad.
+**Run `help(cm)` first in each kernel** to see the available code-mode API.
 
 ```sh
 marimo pair execute --notebook NOTEBOOK_ID --code 'import marimo._code_mode as cm; help(cm)'
 ```
 
-Use `--file -` for multiline Python on stdin or `--file PATH` for a local
-file. Each recipe below is a separate scratchpad call.
-[Connection troubleshooting](reference/execution-context.md)
+Run each Python example in a separate scratchpad call. For multiline code,
+use `--file PATH` or `--file -` (stdin) with the CLI, or send the Python via MCP.
 
 ## Inspect the notebook
 
-**Inspect cells.** List their IDs, source, and execution status to find the
-code the user is working on.
+### List cells and their execution status
 
 ```python
 import marimo._code_mode as cm
@@ -50,21 +46,23 @@ async with cm.get_context() as ctx:
         print(cell.id, cell.code, cell.status, cell.errors)
 ```
 
-**Inspect a live value.** If the notebook defines a DataFrame named `df`,
-read it directly in the scratchpad.
+### Inspect a live value
+
+Read a DataFrame named `df` directly from the scratchpad.
 
 ```python
 print(df.head())
 ```
 
-New scratchpad bindings last one call. Existing objects are shared with the
-user's kernel, so work on a copy when experimenting with in-place mutations.
+Assignments in the scratchpad last one call. In-place mutations can change
+the user's live data.
 
 ## Make a change the user can see
 
-**Create the preview.** Choose an unused name such as `x` so other cells can
-reuse the preview. End the cell with `x` to display the first five rows.
-Name the cell `preview` so you can find it in the next scratchpad call.
+### Create and run a cell
+
+This defines `x` for other cells and displays its value in the notebook.
+Use a free variable name if `x` is already defined.
 
 ```python
 import marimo._code_mode as cm
@@ -74,8 +72,9 @@ async with cm.get_context() as ctx:
     ctx.run_cell(cid)
 ```
 
-**Edit the preview.** Look up the cell by name and read its current source
-before changing it to show ten rows.
+### Edit and rerun the preview
+
+Check the live source before replacing it. The user may have edited it.
 
 ```python
 import marimo._code_mode as cm
@@ -89,14 +88,12 @@ async with cm.get_context() as ctx:
         print(cell.code)
 ```
 
-If the source changed, adapt the edit to the user's current code. In a fresh
-call, check the preview cell's errors and output. [Graph errors](reference/gotchas.md) ·
+Check the cell’s errors and output in a fresh call. [Graph errors](reference/gotchas.md) ·
 [Notebook improvements](reference/notebook-improvements.md)
 
 ## Interact with a widget
 
-Set a marimo slider to trigger the same reactive updates as moving it in
-the notebook UI.
+### Set a marimo slider
 
 ```python
 import marimo._code_mode as cm
@@ -105,20 +102,18 @@ async with cm.get_context() as ctx:
     ctx.set_ui_value(slider, 50)
 ```
 
-For an anywidget with a synced `value` trait, assign it directly.
+### Set an anywidget’s synced trait
 
 ```python
 widget.value = 10
 ```
 
-To change the default for future runs, edit the cell that constructs the
-widget.
+To change the default for future runs, edit the cell that creates the widget.
 [Custom widgets](reference/rich-representations.md)
 
 ## Install a package
 
-To add a dependency to the notebook's environment, queue the package in
-code mode. Installation runs when the context exits.
+The notebook installs the package when the context exits.
 
 ```python
 import marimo._code_mode as cm
