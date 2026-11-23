@@ -16,14 +16,23 @@ When a cell runs, marimo reruns the cells that depend on its variables.
 ## Pair with a notebook
 
 Discover notebooks with `marimo pair list`. Local notebooks authenticate
-automatically. Use the ID from the listing and **run `help(cm)` first in
-each kernel**. Then run Python against the notebook's live variables.
+automatically.
 
 ```sh
 marimo pair list
 # Listing excerpt: {"notebooks": [{"id": "nb-analysis", "name": "analysis.py"}]}
-marimo pair execute --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
-marimo pair execute --notebook nb-analysis --code 'print(df.head())'
+```
+
+Pair executes Python in the notebook's kernel. Code Mode
+(`marimo._code_mode`) is the Python API for inspecting the notebook and
+making edits the user can see. On your first execution in each kernel,
+run `help(cm)` to see the API available there.
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
+help(cm)
+PYTHON
 ```
 
 For a remote notebook, pass the server URL to both commands. If you have
@@ -34,8 +43,6 @@ marimo pair list --url https://notebooks.example.org --token-file ./token
 # Listing excerpt: {"notebooks": [{"notebook_id": "nb-analysis", "name": "analysis.py"}]}
 marimo pair execute --url https://notebooks.example.org --token-file ./token \
   --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
-marimo pair execute --url https://notebooks.example.org --token-file ./token \
-  --notebook nb-analysis --code 'print(df.head())'
 ```
 
 If the notebook isn't running, open or create it with
@@ -43,33 +50,26 @@ If the notebook isn't running, open or create it with
 launcher or `uvx marimo@latest` for the commands above.
 [Startup options](reference/finding-marimo.md) · [Connection troubleshooting](reference/execution-context.md)
 
-Run the recipes below in the scratchpad. With the CLI, pass multiline
-Python via `--file PATH` or `--file -` (stdin).
-
-## Inspect the notebook
+## Work in the notebook with Code Mode
 
 ### List cells and their execution status
 
 ```python
 import marimo._code_mode as cm
 
-async with cm.get_context() as ctx:
-    for cell in ctx.cells:
-        print(cell.id, cell.code, cell.status, cell.errors)
+for cell in cm.get_context().cells:
+    print(cell.id, cell.code, cell.status, cell.errors)
 ```
 
-### Inspect a live value
+### Inspect a live variable
 
-Read a DataFrame named `df` directly from the scratchpad.
+If the notebook defines `df`, you can read it directly.
 
-```python
-print(df.head())
+```sh
+marimo pair execute --notebook nb-analysis --code 'print(df.head())'
 ```
 
-Assignments in the scratchpad last one call. In-place mutations can change
-the user's live data.
-
-## Make a change the user can see
+Scratchpad assignments last one call. In-place mutations affect the live object.
 
 ### Create and run a cell
 
@@ -103,9 +103,9 @@ async with cm.get_context() as ctx:
 Check the cell’s errors and output in a fresh call. [Graph errors](reference/gotchas.md) ·
 [Notebook improvements](reference/notebook-improvements.md)
 
-## Interact with a widget
+### Update a widget
 
-### Set a marimo slider
+To move a marimo slider and rerun its dependents, set its UI value.
 
 ```python
 import marimo._code_mode as cm
@@ -114,7 +114,7 @@ async with cm.get_context() as ctx:
     ctx.set_ui_value(slider, 50)
 ```
 
-### Set an anywidget’s synced trait
+For an anywidget, assign its synced trait directly.
 
 ```python
 widget.value = 10
@@ -123,7 +123,7 @@ widget.value = 10
 To change the default for future runs, edit the cell that creates the widget.
 [Custom widgets](reference/rich-representations.md)
 
-## Install a package
+### Install a package
 
 The notebook installs the package when the context exits.
 
@@ -132,4 +132,14 @@ import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     ctx.packages.add("polars")
+```
+
+### Explore the API
+
+Use Python’s `help` on a method for its parameters and examples.
+
+```python
+import marimo._code_mode as cm
+
+help(cm.AsyncCodeModeContext.edit_cell)
 ```
