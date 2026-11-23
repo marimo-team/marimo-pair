@@ -23,6 +23,19 @@ Review names after the cells work and their dependencies are visible.
 Many private names can mean that a useful stage is hidden or that a cell is
 doing too much. Treat this as a prompt to inspect, not a rule.
 
+## Before deleting a cell
+
+Deleting a cell removes the variables it defines. To see which cells depend
+on a cell named `preview`, look up its descendants in the notebook’s graph.
+
+```python
+import marimo._code_mode as cm
+
+ctx = cm.get_context()
+for cell_id in ctx.graph.descendants(ctx.cells["preview"].id):
+    print(cell_id, ctx.cells[cell_id].code)
+```
+
 ## Setup cell
 
 A setup cell is named `"setup"` and is guaranteed to run before all other

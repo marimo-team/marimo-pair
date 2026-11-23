@@ -23,10 +23,8 @@ marimo pair list
 # Listing excerpt: {"notebooks": [{"id": "nb-analysis", "name": "analysis.py"}]}
 ```
 
-Pair executes Python in the notebook's kernel. Code Mode
-(`marimo._code_mode`) is the Python API for inspecting the notebook and
-making edits the user can see. On your first execution in each kernel,
-run `help(cm)` to see the API available there.
+Use the notebook ID to run Python in its kernel. On your first call in each
+kernel, run `help(cm)` to see the Code Mode API available there.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
@@ -35,8 +33,18 @@ help(cm)
 PYTHON
 ```
 
+If the notebook isn't running, open or create it, then list again. Use the
+project's marimo launcher or `uvx marimo@latest`.
+
+```sh
+marimo edit notebook.py --sandbox
+```
+
+### Connect to a remote notebook
+
 For a remote notebook, pass the server URL to both commands. If you have
-a token file, pass its path to both as well.
+a token file, pass its path to both as well. See `marimo pair --help` for
+other connection options.
 
 ```sh
 marimo pair list --url https://notebooks.example.org --token-file ./token
@@ -45,14 +53,23 @@ marimo pair execute --url https://notebooks.example.org --token-file ./token \
   --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
 ```
 
-If the notebook isn't running, open or create it with
-`marimo edit notebook.py --sandbox`, then list again. Use the project's
-launcher or `uvx marimo@latest` for the commands above.
-[Startup options](reference/finding-marimo.md) · [Connection troubleshooting](reference/execution-context.md)
+## Work in the notebook
 
-## Work in the notebook with Code Mode
+Pair runs Python in a scratchpad inside the notebook’s kernel. You can read
+notebook variables by name. To make an edit the user can see and rerun, use
+Code Mode in the scratchpad to create or edit a notebook cell.
 
-### List cells and their execution status
+### Inspect notebook state
+
+If the notebook defines `df`, you can preview it directly.
+
+```python
+print(df.head())
+```
+
+Assignments in the scratchpad last one call. In-place changes to an object
+like `df` affect the notebook. To see which cells ran or raised an error,
+inspect their live state with `cm.get_context()`.
 
 ```python
 import marimo._code_mode as cm
@@ -61,20 +78,10 @@ for cell in cm.get_context().cells:
     print(cell.id, cell.code, cell.status, cell.errors)
 ```
 
-### Inspect a live variable
+### Edit and run cells
 
-If the notebook defines `df`, you can read it directly.
-
-```sh
-marimo pair execute --notebook nb-analysis --code 'print(df.head())'
-```
-
-Scratchpad assignments last one call. In-place mutations affect the live object.
-
-### Create and run a cell
-
-This defines `x` for other cells and displays its value in the notebook.
-Use a free variable name if `x` is already defined.
+Create and run a cell to display the preview and define `x` for other cells.
+Choose another name if the notebook already defines `x`.
 
 ```python
 import marimo._code_mode as cm
@@ -84,9 +91,8 @@ async with cm.get_context() as ctx:
     ctx.run_cell(cid)
 ```
 
-### Edit and rerun the preview
-
-Check the live source before replacing it. The user may have edited it.
+To show ten rows, edit the same cell and rerun it. Check its live source
+first in case the user has edited it.
 
 ```python
 import marimo._code_mode as cm
@@ -100,8 +106,14 @@ async with cm.get_context() as ctx:
         print(cell.code)
 ```
 
-Check the cell’s errors and output in a fresh call. [Graph errors](reference/gotchas.md) ·
-[Notebook improvements](reference/notebook-improvements.md)
+Check the cell’s errors and output in a fresh call. For details on an API
+method, use Python’s `help` in the scratchpad.
+
+```python
+import marimo._code_mode as cm
+
+help(cm.AsyncCodeModeContext.edit_cell)
+```
 
 ### Update a widget
 
@@ -121,14 +133,10 @@ widget.value = 10
 ```
 
 To change the default for future runs, edit the cell that creates the widget.
-[Custom widgets](reference/rich-representations.md)
 
 ### Manage notebook packages
 
-Use a separate Pair call for each package change. Check the result before
-editing or running a cell that depends on it.
-
-**List installed packages and versions**
+List installed packages and versions in the notebook’s environment.
 
 ```python
 import marimo._code_mode as cm
@@ -137,7 +145,8 @@ for package in cm.get_context().packages.list():
     print(package.name, package.version)
 ```
 
-**Install a package**
+To install a missing package, add it in its own Pair call. Check the result
+before editing or running a cell that depends on it.
 
 ```python
 import marimo._code_mode as cm
@@ -146,7 +155,7 @@ async with cm.get_context() as ctx:
     ctx.packages.add("polars")
 ```
 
-**Remove a package**
+To uninstall a package, remove it in its own call.
 
 ```python
 import marimo._code_mode as cm
@@ -155,20 +164,10 @@ async with cm.get_context() as ctx:
     ctx.packages.remove("polars")
 ```
 
-### Explore the API
-
-Use Python’s `help` on a method for its parameters and examples.
-
-```python
-import marimo._code_mode as cm
-
-help(cm.AsyncCodeModeContext.edit_cell)
-```
-
 ## References
 
 - [Start a notebook](reference/finding-marimo.md) with the project’s Python environment or in sandbox mode.
 - [Troubleshoot a connection](reference/execution-context.md) when a notebook is missing, needs a token, or an edit was interrupted.
 - [Diagnose notebook errors](reference/gotchas.md) involving cell scope, duplicate definitions, or imports after a package install.
 - [Build widgets and visualizations](reference/rich-representations.md) that respond to changes in the notebook.
-- [Improve an existing notebook](reference/notebook-improvements.md) by organizing cells, reusing functions, and caching expensive work.
+- [Improve an existing notebook](reference/notebook-improvements.md) by reviewing cell dependencies, organizing cells, and caching expensive work.
