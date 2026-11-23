@@ -11,26 +11,69 @@
   <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
 </div>
 
-The `marimo-pair` skill helps your agent work alongside you in a live notebook.
-Once installed, try asking: “Open analysis.py and show me the first five rows
-of the dataset.”
+The `marimo-pair` skill helps your agent work alongside you in a live
+notebook. Try asking it to “open analysis.py and show me the first five
+rows of the dataset,” or use the same CLI yourself.
 
-## CLI prerequisites
+## Open a notebook
 
-For `marimo pair`, use [marimo](https://marimo.io) 0.26 or newer for both
-the notebook and CLI. Use the command in the notebook’s pairing prompt or
-run the latest release:
+Use marimo 0.26 or newer for the notebook and CLI. Open an existing
+notebook or create one at that path:
+
+```sh
+marimo edit analysis.py --sandbox
+```
+
+Leave the notebook open and run the pairing commands in a second terminal.
+If you use uv or pixi, run the same commands with your launcher:
 
 ```sh
 uvx marimo@latest pair --help
-# Or with pixi
-pixi exec --force-reinstall marimo pair --help
+# In a pixi project with marimo installed
+pixi run marimo pair --help
 ```
 
-In a pixi project that includes marimo, `pixi run marimo pair --help` uses the
-project’s version.
+## Find a notebook and inspect its data
 
-## Install
+Local notebooks authenticate automatically. Copy the ID for your notebook
+from the listing. If a cell defines a DataFrame named `df`, you can inspect
+it from the terminal:
+
+```sh
+marimo pair list
+# Listing excerpt: {"notebooks": [{"id": "nb-analysis", "name": "analysis.py"}]}
+marimo pair execute --notebook nb-analysis --code 'print(df.head())'
+```
+
+For a remote notebook, pass its URL to both commands. This example uses a
+token file supplied by the server operator:
+
+```sh
+marimo pair list --url https://notebooks.example.org --token-file ./token
+# Listing excerpt: {"notebooks": [{"notebook_id": "nb-analysis", "name": "analysis.py"}]}
+marimo pair execute --url https://notebooks.example.org --token-file ./token \
+  --notebook nb-analysis --code 'print(df.head())'
+```
+
+## Show the result in the notebook
+
+The previous command prints the preview in your terminal. To display it in
+the notebook too, create and run a cell:
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PY'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    cid = ctx.create_cell("df.head()")
+    ctx.run_cell(cid)
+PY
+```
+
+For examples of editing a cell, updating a widget, and installing a
+package in the running notebook, see the [pairing skill](skills/marimo-pair/SKILL.md).
+
+## Install the agent skill
 
 ### Agent Skills (any tool)
 
