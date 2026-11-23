@@ -67,9 +67,12 @@ If the notebook defines `df`, you can preview it directly.
 print(df.head())
 ```
 
-Assignments in the scratchpad last one call. In-place changes to an object
-like `df` affect the notebook. To see which cells ran or raised an error,
-inspect their live state with `cm.get_context()`.
+If the notebook defines a list called `items`, assigning `items = []` in the
+scratchpad gives that name a new list for this call only. Calling
+`items.append(1)` on the notebook’s list changes the list itself, so later
+calls see the added item.
+
+To see which cells ran or raised an error, inspect their live state.
 
 ```python
 import marimo._code_mode as cm
