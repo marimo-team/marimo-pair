@@ -18,9 +18,13 @@ When a cell runs, marimo reruns the cells that depend on its variables.
 Match the notebook by name or path. If several match, ask which one the
 user means.
 
-With the CLI, use `marimo pair list` to find the notebook ID if you need it.
-Use the notebook's launcher, or `uvx marimo@latest pair`. To see what's in
-the running notebook, substitute its ID below and inspect the live cells:
+Use the notebook's launcher, or `uvx marimo@latest pair`. For a local
+notebook, `marimo pair list` discovers the notebook ID and the CLI handles
+authentication automatically. For a remote notebook, pass `--url SERVER_URL`
+to both `list` and `execute`. If a token file is supplied, pass
+`--token-file TOKEN_PATH` to both commands.
+
+To inspect the live cells, substitute the notebook ID below:
 
 ```sh
 marimo pair execute --notebook NOTEBOOK_ID --file - <<'PY'
