@@ -17,10 +17,6 @@ can have no open notebook. Open the requested notebook in the browser and
 start its kernel, then list it again. For startup options, see
 [Finding and invoking marimo](finding-marimo.md).
 
-If an existing connection supplies a stable session ID, keep using it with
-`execute --url SERVER_URL --session SESSION_ID`. Inbox connections use a
-notebook ID, which you can obtain with `pair list`.
-
 ## Authenticate to the server
 
 Local discovery uses private credentials automatically. For a server that
