@@ -158,3 +158,11 @@ import marimo._code_mode as cm
 
 help(cm.AsyncCodeModeContext.edit_cell)
 ```
+
+## References
+
+- [Start a notebook](reference/finding-marimo.md) with the project’s Python environment or in sandbox mode.
+- [Troubleshoot a connection](reference/execution-context.md) when a notebook is missing, needs a token, or an edit was interrupted.
+- [Diagnose notebook errors](reference/gotchas.md) involving cell scope, duplicate definitions, or imports after a package install.
+- [Build widgets and visualizations](reference/rich-representations.md) that respond to changes in the notebook.
+- [Improve an existing notebook](reference/notebook-improvements.md) by organizing cells, reusing functions, and caching expensive work.
