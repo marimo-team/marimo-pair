@@ -1,7 +1,7 @@
 {
   "name": "marimo-pair",
   "version": "0.0.20",
-  "description": "Pair programming protocol for marimo notebooks",
+  "description": "Pair with a coding agent in a live marimo notebook.",
   "author": {
     "name": "marimo-team",
     "email": "contact@marimo.io"

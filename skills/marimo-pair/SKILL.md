@@ -25,9 +25,10 @@ marimo pair list
 marimo pair execute --notebook NOTEBOOK_ID --code 'print("hello")'
 ```
 
-Use the notebook's launcher, or run `uvx marimo@latest pair`. If you already have the notebook ID, pass it directly. For a remote
-server, include its `--url` in both commands. Pass multiline Python with
-`--file PATH` or `--file -` for stdin. [Connection troubleshooting](reference/execution-context.md)
+Use the notebook's launcher, or run `uvx marimo@latest pair`. If you already
+have the notebook ID, pass it directly. For a remote server, include its
+`--url` in both commands. Pass multiline Python with `--file PATH` or
+`--file -` for stdin. [Connection troubleshooting](reference/execution-context.md)
 
 **Starting a notebook.** Run `marimo edit notebook.py` to open or create the
 file. Include `--sandbox` for inline dependencies. [Startup options](reference/finding-marimo.md)

@@ -11,7 +11,11 @@
   <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
 </div>
 
-## Prerequisites
+The `marimo-pair` skill helps your agent work alongside you in a live notebook.
+Once installed, try asking: “Open analysis.py and show me the first five rows
+of the dataset.”
+
+## CLI prerequisites
 
 For `marimo pair`, use [marimo](https://marimo.io) 0.26 or newer for both
 the notebook and CLI. Use the command in the notebook’s pairing prompt or
