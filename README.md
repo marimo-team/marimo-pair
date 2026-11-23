@@ -13,9 +13,7 @@
 
 ## Prerequisites
 
-Pair using your agent’s marimo MCP tools or the `marimo pair` CLI.
-
-For the CLI workflow, use [marimo](https://marimo.io) 0.26 or newer for both
+For `marimo pair`, use [marimo](https://marimo.io) 0.26 or newer for both
 the notebook and CLI. Use the command in the notebook’s pairing prompt or
 run the latest release:
 
