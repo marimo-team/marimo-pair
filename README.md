@@ -11,10 +11,10 @@
   <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
 </div>
 
-[marimo-pair](skills/marimo-pair/SKILL.md) is a skill that lets you and your
-coding agent work in the same marimo notebook. The agent can start a notebook
-or connect to one you already have open. It uses `marimo pair` or MCP to
-inspect live data and make changes you can see in the notebook.
+[marimo-pair](skills/marimo-pair/SKILL.md) is a skill that teaches your coding
+agent to use the Pair CLI (`marimo pair`) or MCP to work in the same reactive
+notebook as you. The agent can start a notebook or join one you already have
+open, where you can both inspect data, edit cells, and see the results.
 
 ## Prerequisites
 
