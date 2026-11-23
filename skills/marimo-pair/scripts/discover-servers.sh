@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Legacy. Use `marimo pair list`.
 # List running marimo instances from the server registry.
 # Cleans up stale entries and outputs live servers as JSON.
 # No marimo installation required.
@@ -16,6 +15,8 @@
 #
 # Pass `url` straight to execute-code.sh --url.
 set -euo pipefail
+
+echo 'For marimo 0.26+, use `marimo pair list`.' >&2
 
 missing=""
 for tool in jq curl; do

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Legacy. Use `marimo pair execute`.
 # Execute code in a running marimo session's scratchpad.
 # No marimo installation required — talks directly to the HTTP API.
 # Usage:
@@ -13,6 +12,8 @@
 #
 # Auth: set MARIMO_TOKEN env var (preferred) or pass --token TOKEN (visible in ps).
 set -euo pipefail
+
+echo 'For marimo 0.26+, use `marimo pair execute`.' >&2
 
 usage() {
   echo "Usage: execute-code.sh --url URL [--file PATH | --session ID] -c 'code'" >&2
