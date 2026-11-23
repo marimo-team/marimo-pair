@@ -9,53 +9,45 @@ marimo is a reactive Python notebook. You and the user share a live kernel.
 When a cell runs, marimo reruns the cells that depend on its variables.
 
 > **WARNING. The active runtime is the source of truth.** Use the
-> `marimo pair` CLI to inspect and edit the running notebook. If you edit the
-> `.py` file directly, the user may never see your changes in the notebook,
-> and the kernel can overwrite them on save.
+> `marimo pair` CLI or marimo's code-mode MCP tools to work in the running
+> notebook. Direct edits to the `.py` file may never appear in the user's
+> UI, and the kernel can overwrite them on save.
 
 ## Pair with the user's notebook
 
-Use the notebook's marimo launcher, or `uvx marimo@latest` for a standalone
-CLI. Use marimo 0.26+ for the CLI and server.
+Use the interface available to your agent. Both run Python in the notebook's
+scratchpad. Match the requested notebook by name or path. If several match,
+ask the user which one they mean.
 
-1. **Find the notebook.** Use the supplied notebook ID or run `marimo pair list`
-   to find it. For a specific server, pass its `--url` to both `list` and
-   `execute`. If several notebooks match, ask which one the user means.
-2. **Start it if needed.** Run `marimo edit notebook.py` to open or create the
-   file. For a standalone notebook with inline dependencies, use
-   `uvx marimo@latest edit --sandbox notebook.py`. Once it opens in the
-   browser, run `pair list` with the same launcher. [Startup options](reference/finding-marimo.md)
-3. **Work in its kernel.** Run `marimo pair execute --notebook NOTEBOOK_ID`
-   with `--code` for a one-liner, `--file PATH` for a Python file, or
-   `--file -` for stdin.
-   In supported agents, `execute` also tries to connect the notebook's message
-   inbox. Scratchpad execution works independently of inbox setup.
+| Interface | Find the notebook | Run Python |
+| --- | --- | --- |
+| CLI | `marimo pair list` | `marimo pair execute --notebook NOTEBOOK_ID --code 'print("hello")'` |
+| Code-mode MCP | Call `list_sessions()` | Call `execute_code(session_id=..., code='print("hello")')` with the returned session ID |
 
-For example, see what the user is working on:
+**CLI.** Use the notebook's launcher, or `uvx marimo@latest pair` for a
+standalone CLI. If you have a notebook ID, pass it directly. For a remote
+server, include its `--url` in both commands. Pass multiline Python with
+`--file PATH` or `--file -` for stdin. See `marimo pair --help` for options,
+including agent inbox connections. [Connection troubleshooting](reference/execution-context.md)
 
-```sh
-marimo pair execute --notebook NOTEBOOK_ID --file - <<'PY'
-import marimo._code_mode as cm
-
-async with cm.get_context() as ctx:
-    for cell in ctx.cells:
-        print(cell.id, cell.code, cell.status)
-PY
-```
-
-Use `marimo pair --help` for commands and flags. For authentication or an
-interrupted execution, see [Connection troubleshooting](reference/execution-context.md).
+**Starting a notebook.** Run `marimo edit notebook.py` to open or create
+the file. Include `--sandbox` for inline dependencies. To serve the
+code-mode MCP tools, use `marimo edit notebook.py --mcp code-mode` with
+`marimo[mcp]` installed and connect the agent to the server's `/mcp/server`
+endpoint. Once the notebook is open, discover it through your chosen
+interface. [Startup options](reference/finding-marimo.md)
 
 ## Show a scratchpad result in the notebook
 
-If the notebook defines `df`, inspect it with `--code 'print(df.head())'`.
+If the notebook defines `df`, run `print(df.head())` in the scratchpad.
 Scratchpad bindings last one call. Existing objects are shared, so an in-place
 mutation can affect the user's data. Work on a copy when experimenting. For
 a lasting transformation, edit the cell that owns the value or define a new
 value in a downstream cell.
 
 To show the preview in the notebook, give a cell the expression `df.head()`
-and run it. The Python snippets below run in the scratchpad via `pair execute`.
+and run it. Pass the Python below to `marimo pair execute` or the MCP tool
+`execute_code`.
 
 ```python
 import marimo._code_mode as cm

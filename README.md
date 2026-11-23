@@ -13,9 +13,13 @@
 
 ## Prerequisites
 
-Use [marimo](https://marimo.io) 0.26 or newer for the running notebook and CLI.
-Follow the command in the notebook’s pairing prompt. For a standalone CLI,
-we recommend the latest release.
+Pair through the `marimo pair` CLI or marimo's code-mode MCP server. For
+MCP, install `marimo[mcp]`, start the notebook with `--mcp code-mode`, and
+connect your agent to its `/mcp/server` endpoint.
+
+For the CLI workflow, use [marimo](https://marimo.io) 0.26 or newer for both
+the notebook and CLI. Use the command in the notebook’s pairing prompt or
+run the latest release:
 
 ```sh
 uvx marimo@latest pair --help
