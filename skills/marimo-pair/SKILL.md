@@ -13,25 +13,38 @@ When a cell runs, marimo reruns the cells that depend on its variables.
 > the `.py` file may never appear in the user's UI, and the kernel can
 > overwrite them on save.
 
-## Pair with the user's notebook
+## Pair with a notebook
 
-Use the notebook's launcher or `uvx marimo@latest pair`.
-
-- Run `marimo pair list` to find the notebook ID.
-- Local notebooks authenticate automatically. For remote notebooks, pass
-  `--url SERVER_URL` to both `list` and `execute`. Include `--token-file TOKEN_PATH`
-  on both commands if a token file is supplied. [Connection troubleshooting](reference/execution-context.md)
-- Run `marimo edit notebook.py` to open or create a notebook. Add `--sandbox` for
-  inline dependencies. [Startup options](reference/finding-marimo.md)
-
-**Run `help(cm)` first in each kernel** to see the available code-mode API.
+Discover notebooks with `marimo pair list`. Local notebooks authenticate
+automatically. Use the ID from the listing and **run `help(cm)` first in
+each kernel**. Then run Python against the notebook's live variables.
 
 ```sh
-marimo pair execute --notebook NOTEBOOK_ID --code 'import marimo._code_mode as cm; help(cm)'
+marimo pair list
+# Listing excerpt: {"notebooks": [{"id": "nb-analysis", "name": "analysis.py"}]}
+marimo pair execute --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
+marimo pair execute --notebook nb-analysis --code 'print(df.head())'
 ```
 
-Run each Python example in a separate scratchpad call. For multiline code,
-use `--file PATH` or `--file -` (stdin) with the CLI, or send the Python via MCP.
+For a remote notebook, pass the server URL to both commands. If you have
+a token file, pass its path to both as well.
+
+```sh
+marimo pair list --url https://notebooks.example.org --token-file ./token
+# Listing excerpt: {"notebooks": [{"notebook_id": "nb-analysis", "name": "analysis.py"}]}
+marimo pair execute --url https://notebooks.example.org --token-file ./token \
+  --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
+marimo pair execute --url https://notebooks.example.org --token-file ./token \
+  --notebook nb-analysis --code 'print(df.head())'
+```
+
+If the notebook isn't running, open or create it with
+`marimo edit notebook.py --sandbox`, then list again. Use the project's
+launcher or `uvx marimo@latest` for the commands above.
+[Startup options](reference/finding-marimo.md) · [Connection troubleshooting](reference/execution-context.md)
+
+Run the recipes below in the scratchpad. With the CLI, pass multiline
+Python via `--file PATH` or `--file -` (stdin).
 
 ## Inspect the notebook
 
