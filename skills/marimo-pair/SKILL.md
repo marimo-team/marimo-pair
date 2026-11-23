@@ -64,26 +64,24 @@ user's kernel, so work on a copy when experimenting with in-place mutations.
 
 **Create the preview.** Choose an unused name such as `x` so other cells can
 reuse the preview. End the cell with `x` to display the first five rows.
-Print the cell ID for the next edit.
+Name the cell `preview` so you can find it in the next scratchpad call.
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = df.head()\nx")
+    cid = ctx.create_cell("x = df.head()\nx", name="preview")
     ctx.run_cell(cid)
-print(cid)
 ```
 
-**Edit the preview.** Replace `CELL_ID` with the ID printed above. Read
-the live source before expanding the preview to ten rows so you preserve
-any edits the user made in the meantime.
+**Edit the preview.** Look up the cell by name and read its current source
+before changing it to show ten rows.
 
 ```python
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cell = ctx.cells["CELL_ID"]
+    cell = ctx.cells["preview"]
     if cell.code == "x = df.head()\nx":
         ctx.edit_cell(cell.id, "x = df.head(10)\nx")
         ctx.run_cell(cell.id)
@@ -91,9 +89,8 @@ async with cm.get_context() as ctx:
         print(cell.code)
 ```
 
-If the source changed, adapt the edit to the user's current code. In a fresh call, look
-up the cell by ID again and check its errors and output. To
-rename a cell, pass `name="preview"` to `ctx.edit_cell`. [Graph errors](reference/gotchas.md) ·
+If the source changed, adapt the edit to the user's current code. In a fresh
+call, check the preview cell's errors and output. [Graph errors](reference/gotchas.md) ·
 [Notebook improvements](reference/notebook-improvements.md)
 
 ## Interact with a widget
