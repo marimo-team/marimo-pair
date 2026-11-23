@@ -55,9 +55,9 @@ marimo pair execute --url https://notebooks.example.org --token-file ./token \
 
 ## Work in the notebook
 
-Pair runs Python in a scratchpad inside the notebook’s kernel. You can read
-notebook variables by name. To make an edit the user can see and rerun, use
-Code Mode in the scratchpad to create or edit a notebook cell.
+Each Pair call runs Python in a fresh scratchpad with access to the notebook’s
+variables. Assigning a name in the scratchpad binds it only for that call.
+Use Code Mode to define variables in a notebook cell.
 
 ### Inspect notebook state
 
@@ -67,10 +67,8 @@ If the notebook defines `df`, you can preview it directly.
 print(df.head())
 ```
 
-If the notebook defines a list called `items`, assigning `items = []` in the
-scratchpad gives that name a new list for this call only. Calling
-`items.append(1)` on the notebook’s list changes the list itself, so later
-calls see the added item.
+Avoid mutating notebook data in the scratchpad. marimo does not track
+in-place mutations or rerun dependent cells when they happen.
 
 To see which cells ran or raised an error, inspect their live state.
 
