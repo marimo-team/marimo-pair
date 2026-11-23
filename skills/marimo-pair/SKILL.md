@@ -18,17 +18,24 @@ When a cell runs, marimo reruns the cells that depend on its variables.
 Match the notebook by name or path. If several match, ask which one the
 user means.
 
-With the CLI, list running notebooks and pass the selected ID to `execute`:
+With the CLI, use `marimo pair list` to find the notebook ID if you need it.
+Use the notebook's launcher, or `uvx marimo@latest pair`. To see what's in
+the running notebook, substitute its ID below and inspect the live cells:
 
 ```sh
-marimo pair list
-marimo pair execute --notebook NOTEBOOK_ID --code 'print("hello")'
+marimo pair execute --notebook NOTEBOOK_ID --file - <<'PY'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    for cell in ctx.cells:
+        print(cell.id, cell.code, cell.status)
+PY
 ```
 
-Use the notebook's launcher, or run `uvx marimo@latest pair`. If you already
-have the notebook ID, pass it directly. For a remote server, include its
-`--url` in both commands. Pass multiline Python with `--file PATH` or
-`--file -` for stdin. [Connection troubleshooting](reference/execution-context.md)
+Use `marimo pair --help` to discover commands and `marimo pair execute --help`
+for execution options. If you need to check a code-mode method, run
+`help(cm)` in the scratchpad after importing `marimo._code_mode as cm`.
+[Connection troubleshooting](reference/execution-context.md)
 
 **Starting a notebook.** Run `marimo edit notebook.py` to open or create the
 file. Include `--sandbox` for inline dependencies. [Startup options](reference/finding-marimo.md)
