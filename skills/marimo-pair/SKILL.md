@@ -23,16 +23,6 @@ marimo pair list
 # Listing excerpt: {"notebooks": [{"id": "nb-analysis", "name": "analysis.py"}]}
 ```
 
-Use the notebook ID to run Python in its kernel. On your first call in each
-kernel, run `help(cm)` to see the Code Mode API available there.
-
-```sh
-marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
-import marimo._code_mode as cm
-help(cm)
-PYTHON
-```
-
 If you need to open or create a notebook, see the [startup guide](reference/finding-marimo.md)
 to choose the launcher and Python environment. For a notebook that declares
 its dependencies inline, use `--sandbox`. Once it’s open, run `marimo pair list` again.
@@ -61,8 +51,15 @@ If the notebook is missing from the listing or authentication fails, see the
 
 Pair runs Python in the user’s live notebook. You can inspect notebook
 variables directly and use the Code Mode API (`marimo._code_mode`) to edit
-cells, run them, and update widgets. The commands below use the notebook ID
-from the local listing above.
+cells, run them, and update widgets. **Run `help(cm)` first in each notebook kernel** to see
+the Code Mode API available there. Use the notebook ID from `marimo pair list`.
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
+help(cm)
+PYTHON
+```
 
 ### Inspect notebook state
 
