@@ -63,16 +63,17 @@ PYTHON
 
 ### Inspect notebook state
 
-Each execution starts in a scratchpad with access to variables defined in
-notebook cells. If a cell defines `df`, you can inspect it directly.
+Python runs in a temporary execution environment with access to variables
+defined in notebook cells. For example, if a cell defines `df`, you can
+inspect it directly.
 
 ```sh
 marimo pair execute --notebook nb-analysis --code 'print(df.head())'
 ```
 
-Names assigned in the scratchpad last for one execution. Avoid mutating
-notebook data in place because marimo does not track those changes. To
-inspect the cells themselves, use Code Mode to read their source and status.
+**Variables you assign during an execution are local to that call.** To keep
+a variable in the notebook, define it in a cell through Code Mode.
+Code Mode also lets you inspect each cell’s source, status, and errors.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
@@ -84,15 +85,21 @@ async with cm.get_context() as ctx:
 PYTHON
 ```
 
+Notebook variables refer to live objects. Avoid mutating notebook data in
+place because marimo does not track those changes. For intentional UI
+updates, see [Update a widget](#update-a-widget).
+
 ### Edit and run cells
 
 Work becomes part of the user’s notebook when you create or edit a cell
 through Code Mode. The user can rerun the code, see the result, and discuss
 it with you.
 
-**Notebook rules.** Each public name can be defined in only one cell. Names
-like `_x` are local to their cell. Cells cannot form dependency cycles or
-use wildcard imports (`from module import *`).
+**Notebook rules**
+
+- Each public name can be defined in only one cell. Names like `_x` are local to their cell.
+- Cells cannot depend on each other in a cycle.
+- Wildcard imports (`from module import *`) are unsupported.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
