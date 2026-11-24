@@ -161,8 +161,8 @@ PYTHON
 
 ### Update a widget
 
-To interact with a widget in the running notebook, update its live value.
-For a marimo slider, use Code Mode to set its value and rerun its dependents.
+For a marimo slider or another `mo.ui` element, use Code Mode to set its
+value. This triggers the same reactive updates as a user interaction.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
