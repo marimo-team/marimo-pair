@@ -86,44 +86,47 @@ PYTHON
 
 ### Edit and run cells
 
-Create and run a cell to show the first five rows of `df` in the notebook.
-The cell also defines `x`, which other cells can use.
-Choose another name if the notebook already defines `x`.
-[How names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
+This cell displays the first five rows of `df` and defines `x` for other
+cells. `create_cell` returns the new cell’s ID.
+[How variable names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = df.head()\nx", name="preview")
+    cid = ctx.create_cell("x = df.head()\nx")
     ctx.run_cell(cid)
+    print(cid)
 PYTHON
 ```
 
-In a later execution, look up the cell by its ID or its name. Read its
-current source before editing because the user may have changed it.
+The printed ID works across executions. If the ID is `Hbol`, this shows
+the cell’s current source, including any edits the user has made.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    print(ctx.cells["preview"].code)
+    print(ctx.cells["Hbol"].code)
 PYTHON
 ```
 
-To show ten rows, replace the cell’s source and rerun it.
+The same ID works for editing and rerunning the cell.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    ctx.edit_cell("preview", "x = df.head(10)\nx")
-    ctx.run_cell("preview")
+    ctx.edit_cell("Hbol", "x = df.head(10)\nx")
+    ctx.run_cell("Hbol")
 PYTHON
 ```
+
+Cell names are optional. If a cell has a name, you can use it anywhere
+these examples use the cell ID.
 
 ### Update a widget
 

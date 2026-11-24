@@ -26,14 +26,14 @@ doing too much. Treat this as a prompt to inspect, not a rule.
 ## Before deleting a cell
 
 Deleting a cell removes the variables it defines. To see which cells depend
-on a cell named `preview`, look up its descendants in the notebook’s graph.
+on it, look up its ID in the notebook’s graph. This example uses `Hbol`.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    for cell_id in ctx.graph.descendants(ctx.cells["preview"].id):
+    for cell_id in ctx.graph.descendants("Hbol"):
         print(cell_id, ctx.cells[cell_id].code)
 PYTHON
 ```
