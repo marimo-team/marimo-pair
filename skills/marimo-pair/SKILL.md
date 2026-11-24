@@ -86,9 +86,9 @@ PYTHON
 
 ### Edit and run cells
 
-`create_cell` takes Python source and returns a cell ID. `run_cell` queues
-that cell to run when the context exits. In an empty notebook, this example
-defines `x` and displays its value.
+Work becomes part of the user’s notebook when you create or edit a cell
+through Code Mode. The user can rerun the code, see the result, and discuss
+it with you.
 [How variable names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
 ```sh
@@ -114,8 +114,8 @@ async with cm.get_context() as ctx:
 PYTHON
 ```
 
-`edit_cell` replaces the source of an existing cell. Here the same cell
-defines `x = 2` when it runs again.
+A later execution can update that same cell. Here the user sees its output
+change from `1` to `2`.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
