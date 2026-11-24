@@ -61,82 +61,91 @@ If the notebook is missing from the listing or authentication fails, see the
 
 Pair runs Python in the user’s live notebook. You can inspect notebook
 variables directly and use the Code Mode API (`marimo._code_mode`) to edit
-cells, run them, and update widgets. Each execution has its own scratchpad
-scope, so names you assign there last only for that call.
+cells, run them, and update widgets. The commands below use the notebook ID
+from the local listing above.
 
 ### Inspect notebook state
 
-If the notebook defines `df`, you can preview it directly.
+Each execution starts in a scratchpad with access to variables defined in
+notebook cells. If a cell defines `df`, you can inspect it directly.
 
-```python
-print(df.head())
+```sh
+marimo pair execute --notebook nb-analysis --code 'print(df.head())'
 ```
 
-Avoid mutating notebook data in the scratchpad. marimo does not track
-in-place mutations or rerun dependent cells when they happen.
+Names assigned in the scratchpad last for one execution. Avoid mutating
+notebook data in place because marimo does not track those changes. To
+inspect the cells themselves, use Code Mode to read their source and status.
 
-To see which cells ran or raised an error, inspect their live state.
-
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
-for cell in cm.get_context().cells:
-    print(cell.id, cell.code, cell.status, cell.errors)
+async with cm.get_context() as ctx:
+    for cell in ctx.cells:
+        print(cell.id, cell.code[:50], cell.status, cell.errors)
+PYTHON
 ```
 
 ### Edit and run cells
 
-Create and run a cell to display the preview and define `x` for other cells.
+To keep the preview between executions, create a cell and run it. This
+displays the preview in the notebook and defines `x` for other cells.
 Choose another name if the notebook already defines `x`.
 [How names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     cid = ctx.create_cell("x = df.head()\nx", name="preview")
     ctx.run_cell(cid)
+PYTHON
 ```
 
-To show ten rows, edit the same cell and rerun it. Check its live source
-first in case the user has edited it.
+In a later execution, look up the cell by its ID or its name. Read its
+current source before editing because the user may have changed it.
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cell = ctx.cells["preview"]
-    if cell.code == "x = df.head()\nx":
-        ctx.edit_cell(cell.id, "x = df.head(10)\nx")
-        ctx.run_cell(cell.id)
-    else:
-        print(cell.code)
+    print(ctx.cells["preview"].code)
+PYTHON
 ```
 
-Check the cell’s errors and output in a fresh call. For details on an API
-method, use Python’s `help` in the scratchpad.
+To show ten rows, replace the cell’s source and rerun it.
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
-help(cm.AsyncCodeModeContext.edit_cell)
+async with cm.get_context() as ctx:
+    ctx.edit_cell("preview", "x = df.head(10)\nx")
+    ctx.run_cell("preview")
+PYTHON
 ```
 
 ### Update a widget
 
-To move a marimo slider and rerun its dependents, set its UI value.
+To interact with a widget in the running notebook, update its live value.
+For a marimo slider, use Code Mode to set its value and rerun its dependents.
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     ctx.set_ui_value(slider, 50)
+PYTHON
 ```
 
 For an anywidget, assign its synced trait directly.
 
-```python
-widget.value = 10
+```sh
+marimo pair execute --notebook nb-analysis --code 'widget.value = 10'
 ```
 
 To change the default for future runs, edit the cell that creates the widget.
@@ -146,30 +155,37 @@ For a custom widget that drives other cells, see [reactive anywidgets](reference
 
 List installed packages and versions in the notebook’s environment.
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
-for package in cm.get_context().packages.list():
-    print(package.name, package.version)
+async with cm.get_context() as ctx:
+    for package in ctx.packages.list():
+        print(package.name, package.version)
+PYTHON
 ```
 
 To install a missing package, add it in its own Pair call. Check the result
 before editing or running a cell that depends on it.
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     ctx.packages.add("polars")
+PYTHON
 ```
 
 To uninstall a package, remove it in its own call.
 
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
     ctx.packages.remove("polars")
+PYTHON
 ```
 
 ## References
