@@ -86,8 +86,9 @@ PYTHON
 
 ### Edit and run cells
 
-This cell displays the first five rows of `df` and defines `x` for other
-cells. `create_cell` returns the new cell’s ID.
+`create_cell` takes Python source and returns a cell ID. `run_cell` queues
+that cell to run when the context exits. In an empty notebook, this example
+defines `x` and displays its value.
 [How variable names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
 ```sh
@@ -95,7 +96,7 @@ marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = df.head()\nx")
+    cid = ctx.create_cell("x = 1\nx")
     ctx.run_cell(cid)
     print(cid)
 PYTHON
@@ -113,14 +114,15 @@ async with cm.get_context() as ctx:
 PYTHON
 ```
 
-The same ID works for editing and rerunning the cell.
+`edit_cell` replaces the source of an existing cell. Here the same cell
+defines `x = 2` when it runs again.
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    ctx.edit_cell("Hbol", "x = df.head(10)\nx")
+    ctx.edit_cell("Hbol", "x = 2\nx")
     ctx.run_cell("Hbol")
 PYTHON
 ```
