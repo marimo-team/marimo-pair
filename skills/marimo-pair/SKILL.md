@@ -86,8 +86,8 @@ PYTHON
 
 ### Edit and run cells
 
-To keep the preview between executions, create a cell and run it. This
-displays the preview in the notebook and defines `x` for other cells.
+Create and run a cell to show the first five rows of `df` in the notebook.
+The cell also defines `x`, which other cells can use.
 Choose another name if the notebook already defines `x`.
 [How names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
