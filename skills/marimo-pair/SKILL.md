@@ -127,8 +127,20 @@ async with cm.get_context() as ctx:
 PYTHON
 ```
 
-Cell names are optional. If a cell has a name, you can use it anywhere
-these examples use the cell ID.
+A cell can also have a name. This example names the existing cell
+`initial_value`, then reads its source by name after the change takes effect.
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx.edit_cell("Hbol", name="initial_value")
+
+async with cm.get_context() as ctx:
+    print(ctx.cells["initial_value"].code)
+PYTHON
+```
 
 ### Update a widget
 
