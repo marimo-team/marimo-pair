@@ -33,8 +33,9 @@ help(cm)
 PYTHON
 ```
 
-If the notebook isn't running, open or create it, then list again. Use the
-project's marimo launcher or `uvx marimo@latest`.
+If you need to open or create a notebook, see the [startup guide](reference/finding-marimo.md)
+to choose the launcher and Python environment. For a notebook that declares
+its dependencies inline, use `--sandbox`. Once it’s open, run `marimo pair list` again.
 
 ```sh
 marimo edit notebook.py --sandbox
@@ -52,6 +53,9 @@ marimo pair list --url https://notebooks.example.org --token-file ./token
 marimo pair execute --url https://notebooks.example.org --token-file ./token \
   --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
 ```
+
+If the notebook is missing from the listing or authentication fails, see the
+[connection troubleshooting guide](reference/execution-context.md#find-the-intended-notebook).
 
 ## Work in the notebook
 
@@ -84,6 +88,7 @@ for cell in cm.get_context().cells:
 
 Create and run a cell to display the preview and define `x` for other cells.
 Choose another name if the notebook already defines `x`.
+[How names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
 ```python
 import marimo._code_mode as cm
@@ -135,6 +140,7 @@ widget.value = 10
 ```
 
 To change the default for future runs, edit the cell that creates the widget.
+For a custom widget that drives other cells, see [reactive anywidgets](reference/rich-representations.md#reactive-anywidgets-in-marimo).
 
 ### Manage notebook packages
 
