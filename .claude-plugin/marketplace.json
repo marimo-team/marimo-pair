@@ -5,13 +5,13 @@
     "email": "contact@marimo.io"
   },
   "metadata": {
-    "description": "Pair programming protocol for marimo notebooks",
+    "description": "Pair with a coding agent in a live marimo notebook.",
     "version": "0.0.20"
   },
   "plugins": [
     {
       "name": "marimo-pair",
-      "description": "Pair programming protocol for marimo notebooks",
+      "description": "Pair with a coding agent in a live marimo notebook.",
       "source": "./",
       "skills": [
         "./skills"

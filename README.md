@@ -11,13 +11,14 @@
   <video src="https://github.com/user-attachments/assets/d6d3f57a-e997-423c-bf14-8d9fba75e310" width="600" controls></video>
 </div>
 
+[marimo-pair](skills/marimo-pair/SKILL.md) is a skill that teaches your coding
+agent to use the Pair CLI (`marimo pair`) or MCP to work in the same reactive
+notebook as you. The agent can start a notebook or join one you already have
+open, where you can both inspect data, edit cells, and see the results.
+
 ## Prerequisites
 
-- A running [marimo](https://marimo.io) notebook (`--no-token` for
-  auto-discovery; `MARIMO_TOKEN` env var for servers with auth)
-- `bash`, `curl`, and `jq` available on `PATH` (on Windows, run from
-  Git Bash, or from WSL with those tools installed in the distro — the
-  scripts also find notebooks running on the Windows host)
+marimo 0.26 or newer, or uv.
 
 ## Install
 
@@ -52,26 +53,6 @@ To opt in to auto-updates (recommended), so you always get the latest version:
 
 ```
 /plugin → Marketplaces → marimo-pair → Enable auto-update
-```
-
-## FAQ
-
-### I keep getting prompted to allow Bash commands
-
-The skill declares its own `allowed-tools`, but Claude Code may still prompt
-you to approve each Bash call. To avoid repeated prompts, copy the absolute
-paths to the scripts from the installed skill and add them to your
-`.claude/settings.json` (project-level) or `~/.claude/settings.json` (global):
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(bash /path/to/skills/marimo-pair/scripts/discover-servers.sh *)",
-      "Bash(bash /path/to/skills/marimo-pair/scripts/execute-code.sh *)"
-    ]
-  }
-}
 ```
 
 ## Contributing

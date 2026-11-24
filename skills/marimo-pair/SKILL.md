@@ -1,293 +1,228 @@
 ---
 name: marimo-pair
 description: >-
-  Drive a live marimo notebook as a workspace: run Python in the same kernel
-  the user does, inspect live notebook state, and commit durable notebook
-  changes. Use when the user wants to start a marimo notebook or pair on an
-  active marimo session.
-allowed-tools: Bash(bash **/scripts/discover-servers.sh *), Bash(bash **/scripts/execute-code.sh *), Read
+  Start a marimo notebook or pair on a running one. Inspect live Python state,
+  edit and run cells, and interact with widgets in the user's kernel.
 ---
 
-marimo is a reactive Python runtime for building reproducible Python programs
-(marimo notebooks). Cells are connected by the variables they define and
-reference. Running a cell re-executes dependents in dataflow order. The active
-runtime holds the kernel namespace, cell state, and dataflow graph. The
-notebook (`.py` file) is the artifact the kernel writes from that state while a
-session is running.
+marimo is a reactive Python notebook. You and the user share a live kernel.
+When a cell runs, marimo reruns the cells that depend on its variables.
 
-A user interacts with the same runtime via a notebook UI with cells, outputs,
-and widgets.
+> **WARNING. The active runtime is the source of truth.** Use the Pair CLI
+> (`marimo pair`) or MCP to work in the running notebook. Direct edits to
+> the `.py` file may never appear in the user's UI, and the kernel can
+> overwrite them on save.
 
-**WARNING. The active runtime is the source of truth.** During a session, you
-SHOULD NOT modify the associated `.py` file directly. File edits WILL NOT reach
-the active kernel or user, and the kernel may overwrite them on save. Use
-`marimo._code_mode` (`cm`) for notebook changes. Reading disk is fine, but
-prefer `ctx.cells[...].code` for current cell code.
+## Pair with a notebook
 
-The harness reports the absolute path to this `SKILL.md`. Resolve bundled
-`scripts/...` and `reference/...` paths from its parent directory, even when
-the current working directory is a notebook workspace. In command examples,
-replace `/absolute/path/to/marimo-pair` with that directory.
+Discover notebooks with `marimo pair list`. Local notebooks authenticate
+automatically.
 
-## Required first kernel command
-
-Start every code-mode session with this dedicated command:
-
-```bash
-bash /absolute/path/to/marimo-pair/scripts/execute-code.sh \
-  --url http://localhost:2718 \
-  -c "import marimo._code_mode as cm; help(cm)"
+```sh
+marimo pair list
+# Listing excerpt: {"notebooks": [{"id": "nb-analysis", "name": "analysis.py"}]}
 ```
 
-Follow this order for each kernel, including read-only tasks:
+If you need to open or create a notebook, see the [startup guide](reference/finding-marimo.md)
+to choose the launcher and Python environment. For a notebook that declares
+its dependencies inline, use `--sandbox`. Once it’s open, run `marimo pair list` again.
 
-1. Run the inspection command once.
-2. Wait for successful `help(cm)` output.
-3. Then use `cm.get_context()` or another `cm` API in a later call.
-
-Do not run task-specific `cm` code before the inspection command succeeds.
-
-## Connect to a Notebook
-
-Use the bundled `execute-code.sh` from the reported skill directory or MCP
-(`execute_code(...)`) to run Python in a live marimo kernel.
-
-`execute-code.sh` always takes `--url`. If the user provides a notebook URL,
-run the required inspection against it directly:
-
-```bash
-bash /absolute/path/to/marimo-pair/scripts/execute-code.sh \
-  --url http://localhost:2718 \
-  -c "import marimo._code_mode as cm; help(cm)"
+```sh
+marimo edit notebook.py --sandbox
 ```
 
-After that command succeeds, pass task code with `-c CODE`, `-` for stdin, or
-a file path:
+### Connect to a remote notebook
 
-```bash
-bash /absolute/path/to/marimo-pair/scripts/execute-code.sh \
-  --url http://localhost:2718 - <<'PY'
+For a remote notebook, pass the server URL to both commands. If you have
+a token file, pass its path to both as well. See `marimo pair --help` for
+other connection options.
+
+```sh
+marimo pair list --url https://notebooks.example.org --token-file ./token
+# Listing excerpt: {"notebooks": [{"notebook_id": "nb-analysis", "name": "analysis.py"}]}
+marimo pair execute --url https://notebooks.example.org --token-file ./token \
+  --notebook nb-analysis --code 'import marimo._code_mode as cm; help(cm)'
+```
+
+If the notebook is missing from the listing or authentication fails, see the
+[connection troubleshooting guide](reference/execution-context.md#find-the-intended-notebook).
+
+## Work in the notebook
+
+Pair runs Python in the user’s live notebook. You can inspect notebook
+variables directly and use the Code Mode API (`marimo._code_mode`) to edit
+cells, run them, and update widgets. **Run `help(cm)` first in each notebook kernel** to see
+the Code Mode API available there. Use the notebook ID from `marimo pair list`.
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
+help(cm)
+PYTHON
+```
+
+### Inspect notebook state
+
+Python runs in a temporary execution environment with access to variables
+defined in notebook cells. For example, if a cell defines `df`, you can
+inspect it directly.
+
+```sh
+marimo pair execute --notebook nb-analysis --code 'print(df.head())'
+```
+
+**Variables you assign during an execution are local to that call.** To keep
+a variable in the notebook, define it in a cell through Code Mode.
+Code Mode also lets you inspect each cell’s source, status, and errors.
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = df.head()")
-    ctx.run_cell(cid)
-PY
+    for cell in ctx.cells:
+        print(cell.id, cell.code[:50], cell.status, cell.errors)
+PYTHON
 ```
 
-If the user gives no URL, find or start a notebook. Look for a running server
-with `bash /absolute/path/to/marimo-pair/scripts/discover-servers.sh`, MCP
-`list_sessions()`, or local process context, and pass the `url` it reports to
-`--url`. With one notebook open, the script targets it automatically; with
-several, pass `--file` with the notebook's file key.
+Notebook variables refer to live objects. Avoid mutating notebook data in
+place because marimo does not track those changes. For intentional UI
+updates, see [Update a widget](#update-a-widget).
 
-If no server is running and the user wants a notebook, start marimo with
-`--no-token` (and without `--headless`) so it auto-registers for discovery. The
-notebook UI must be open for `execute-code` to target it. The right invocation
-depends on context (project tooling, global install, sandbox mode). If the
-notebook file contains a PEP 723 `#
-/// script` header, it MUST be opened with `--sandbox` — otherwise marimo
-ignores the inline dependencies. See
-[finding-marimo.md](reference/finding-marimo.md) for the full decision tree and
-[execution-context.md](reference/execution-context.md) for selector resolution,
-scripts, MCP, and shell quoting.
+### Edit and run cells
 
-## Scratchpad Scope
+Work becomes part of the user’s notebook when you create or edit a cell
+through Code Mode. The user can rerun the code, see the result, and discuss
+it with you.
 
-`execute-code` evaluates Python in marimo's scratchpad: a temporary namespace
-with a shallow copy of the kernel globals. Notebook variables are available by
-name, but new top-level bindings and rebindings are discarded after each call.
-In-place mutations to notebook-owned objects can persist because those names
-still reference live objects.
+**Notebook rules**
 
-Each call reports stdout and stderr from the scratchpad, plus console output
-from notebook cells it causes to run, including reactive descendants.
+- Each public name can be defined in only one cell. Names like `_x` are local to their cell.
+- Cells cannot depend on each other in a cycle.
+- Wildcard imports (`from module import *`) are unsupported.
 
-### Ordinary Python
-
-Use ordinary Python in the scratchpad to inspect variables, sample data, test
-transformations, probe APIs, check imports, and read widget state.
-
-```python
-print(df.head())
-
-x = 10
-print(x)
-```
-
-Here `df` comes from notebook globals, while `x` is a scratchpad-local binding.
-`x` exists for this call only and WILL NOT be added to notebook globals.
-
-### Persist with `cm`
-
-Top-level scratchpad assignments and rebindings are temporary. To persist work,
-including new variables, you MUST submit changes through `marimo._code_mode`
-(`cm`).
-
-`marimo._code_mode` is a PRIVATE, UNSTABLE agent API (note the leading
-underscore). It exists for tools like this skill to drive a live kernel from
-the scratchpad. DO NOT import it from notebook cells, library code, or
-anything a user would run — methods can change or disappear across marimo
-versions and kernels. Treat every `import marimo._code_mode as cm` as
-scratchpad-only.
-
-Open a code-mode context to queue notebook changes.
-
-```python
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
 
 async with cm.get_context() as ctx:
-    cid = ctx.create_cell("x = df.head()")
+    cid = ctx.create_cell("x = 1\nx")
     ctx.run_cell(cid)
+    print(cid)
+PYTHON
 ```
 
-The scratchpad supports top-level async code. Use `async with` directly;
-wrapping it in `asyncio.run(...)` is unnecessary and can conflict with the
-kernel's event loop.
+The printed ID works across executions. If the ID is `Hbol`, this shows
+the cell’s current source, including any edits the user has made.
 
-After this block exits and the new cell runs, `x` is notebook state. Later
-scratchpad calls can read `x` by name. Code later in the same scratchpad call
-should read `ctx.globals["x"]`, because the scratchpad namespace was copied
-before the cell ran.
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
 
-Inside the context, queued mutation methods are synchronous. Call them
-directly; do not `await` them. Each call queues an operation for marimo to
-apply when the context exits normally. If the block raises, the queue is
-discarded.
-
-On clean exit, marimo applies packages, validates and applies structural cell
-changes, runs queued cells, then may run dependents. Validation is only
-structural since queued cell runs can still error. `create_cell` and
-`edit_cell` change notebook structure only. Use `run_cell` to execute. 
-
-`create_cell` currently defaults to `hide_code=True`, which collapses the code
-editor in the UI. Pass `hide_code=False` if the user wants created cells to
-be visible without manually expanding them.
-
-
-## Marimo Rules
-
-marimo imposes a small contract on notebook code so it can keep the notebook as
-a directed acyclic graph (DAG):
-
-- **No cycles** - cells cannot depend on each other in a cycle.
-- **No public redefinitions across cells** - each name has one owning cell.
-- **No wildcard imports** - `import *` prevents static analysis of definitions.
-
-These rules keep the kernel, UI, and saved artifact consistent.
-
-When `cm` submits a cell body, marimo parses its top-level definitions and
-references. Public names enter the graph. Names that start with `_` are local
-to their cell and unavailable to other cells. If a `cm` edit violates the
-contract, marimo rejects the structural change and returns the validation
-error.
-
-## The Notebook's Shape
-
-A notebook is an ordered collection of cells. `ctx.cells` is the document view
-and `ctx.graph` is the dataflow view.
-
-```python
-for cell in ctx.cells:
-    cell  # .id, .code, .name, .config, .status, .errors
-
-ctx.cells["setup"]         # by name
-ctx.cells[0]               # by position
-list(ctx.cells.keys())     # all IDs, in notebook order
+async with cm.get_context() as ctx:
+    print(ctx.cells["Hbol"].code)
+PYTHON
 ```
 
-Cell IDs are opaque strings which can be queried from the notebook or captured
-from `cm` return values:
+A later execution can update that same cell. Here the user sees its output
+change from `1` to `2`.
 
-```python
-cid = ctx.create_cell("df = pd.read_csv('data.csv')")
-print(cid)   # e.g. 'Hbol'
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx.edit_cell("Hbol", "x = 2\nx")
+    ctx.run_cell("Hbol")
+PYTHON
 ```
 
-Alternatively, cells can be assigned and referenced by `name`. The graph can be
-used to understand its role in the dataflow.
+Cell names are optional. This call gives the existing cell the name `initial_value`.
 
-```python
-for cid, impl in ctx.graph.cells.items():
-    impl  # .defs, .refs   (sets of public names)
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
 
-ctx.graph.descendants(cid)   # cells that re-run when this one changes
-ctx.graph.ancestors(cid)     # cells this one depends on
+async with cm.get_context() as ctx:
+    ctx.edit_cell("Hbol", name="initial_value")
+PYTHON
 ```
 
-In marimo, deletes are *destructive* so it can be useful to query the
-descendants prior to deleting to understand it's impact.
+A later call can read the cell’s source by name.
 
-## Writing Notebook Changes
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
 
-The graph contract keeps marimo able to run and save the notebook. Passing
-those checks alone does not guarantee a useful artifact. Committed cells should
-still be readable, rerunnable, and editable.
+async with cm.get_context() as ctx:
+    print(ctx.cells["initial_value"].code)
+PYTHON
+```
 
-Make durable edits that reuse the notebook's existing names, imports,
-dependencies, and UI model. Don't be lazy. Avoid one-off workarounds that pass
-`cm` validation but leave a brittle notebook.
+### Update a widget
 
-### Cell Bodies
+For a marimo slider or another `mo.ui` element, use Code Mode to set its
+value. This triggers the same reactive updates as a user interaction.
 
-Submit the code that belongs in the cell.
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
 
-- **Submit cell contents** - `create_cell` and `edit_cell` take cell contents,
-  not saved-file `@app.cell` wrappers.
-- **Read before replacing** - for now, another editor may change a cell between
-  scratchpad calls. Before `edit_cell`, read the current body from
-  `ctx.cells[...]` and submit the full replacement.
-- **Reuse notebook imports** - if `np` already exists, use it or edit the owning
-  import cell. DO NOT add `import numpy as _np` just to bypass the graph.
-- **Define each public name once** - a public name has one owning cell.
-  Reassigning it in another cell fails with `Multiply-defined names`; edit the
-  owning cell or give the result a new name. See
-  [gotchas.md](reference/gotchas.md).
-- **Run cells deliberately** - `create_cell` and `edit_cell` change structure
-  only. Queue `ctx.run_cell(...)` when the cell should execute.
+async with cm.get_context() as ctx:
+    ctx.set_ui_value(slider, 50)
+PYTHON
+```
 
-### Cell Boundaries
+For an anywidget, assign its synced trait directly.
 
-A cell is also a rerun boundary. Put expensive or reusable computation
-upstream of presentation so UI edits stay cheap. Keep cheap,
-presentation-specific work with the view when that is easier to read.
+```sh
+marimo pair execute --notebook nb-analysis --code 'widget.value = 10'
+```
 
-Use `mo.vstack` and `mo.hstack` only when the composition is part of the UI.
-Narrative often reads better in an adjacent markdown cell.
+To change the default for future runs, edit the cell that creates the widget.
+For a custom widget that drives other cells, see [reactive anywidgets](reference/rich-representations.md#reactive-anywidgets-in-marimo).
 
-### Prefer `cm`-Managed Changes
+### Manage notebook packages
 
-Use `cm` APIs when they exist. Avoid direct file edits, shell package commands,
-and scratchpad-only state for changes that should persist.
+List installed packages and versions in the notebook’s environment.
 
-- **Do not edit the `.py` artifact** - DO NOT use `Edit`, `Write`, or
-  `NotebookEdit` on the notebook file during a live session. Use
-  `ctx.edit_cell(...)` even for small changes.
-- **Manage packages through `cm`** - use `ctx.packages.add()` or
-  `ctx.packages.remove()` instead of direct `uv` or `pip`; confirm
-  non-obvious dependency changes.
-- **Avoid transient paths** - persisted cells should not depend on `/tmp/...`
-  unless the work is intentionally transient.
-- **Delete deliberately** - deleting a cell removes globals it defines. Reuse
-  empty cells when convenient and delete cells left empty after edits.
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
 
-### UI and Widgets
+async with cm.get_context() as ctx:
+    for package in ctx.packages.list():
+        print(package.name, package.version)
+PYTHON
+```
 
-Inspect the object before changing it. Different UI objects update through
-different paths.
+To install a missing package, add it in its own Pair call. Check the result
+before editing or running a cell that depends on it.
 
-- **Set `mo.ui.*` through `cm`** - use `ctx.set_ui_value(element, value)` inside
-  `cm.get_context()`.
-- **Set anywidget traitlets directly** - synced traitlets are Python
-  attributes, for example `widget.value = 5`.
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
 
-For designing custom visual or interactive output, see
-[rich-representations.md](reference/rich-representations.md).
+async with cm.get_context() as ctx:
+    ctx.packages.add("polars")
+PYTHON
+```
+
+To uninstall a package, remove it in its own call.
+
+```sh
+marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
+import marimo._code_mode as cm
+
+async with cm.get_context() as ctx:
+    ctx.packages.remove("polars")
+PYTHON
+```
 
 ## References
 
-- [execution-context.md](reference/execution-context.md) — scripts, MCP, auth, startup, and shell quoting
-- [finding-marimo.md](reference/finding-marimo.md) — choosing the right marimo invocation
-- [gotchas.md](reference/gotchas.md) — name redefinition, cached module proxies, and notebook traps
-- [rich-representations.md](reference/rich-representations.md) — custom widgets and visualizations
-- [notebook-improvements.md](reference/notebook-improvements.md) — improving existing notebooks
+- [Start a notebook](reference/finding-marimo.md) with the project’s Python environment or in sandbox mode.
+- [Troubleshoot a connection](reference/execution-context.md) when a notebook is missing, needs a token, or an edit was interrupted.
+- [Diagnose notebook errors](reference/gotchas.md) involving cell scope, duplicate definitions, or imports after a package install.
+- [Build widgets and visualizations](reference/rich-representations.md) that respond to changes in the notebook.
+- [Improve an existing notebook](reference/notebook-improvements.md) by reviewing cell dependencies, organizing cells, and caching expensive work.

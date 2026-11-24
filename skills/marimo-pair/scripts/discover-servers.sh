@@ -16,6 +16,10 @@
 # Pass `url` straight to execute-code.sh --url.
 set -euo pipefail
 
+printf '%s\n' \
+  'Warning: discover-servers.sh is deprecated.' \
+  'With marimo 0.26 or newer, use `marimo pair list`.' >&2
+
 missing=""
 for tool in jq curl; do
   command -v "$tool" >/dev/null 2>&1 || missing="${missing:+$missing, }$tool"

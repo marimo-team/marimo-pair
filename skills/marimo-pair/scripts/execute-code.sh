@@ -13,6 +13,10 @@
 # Auth: set MARIMO_TOKEN env var (preferred) or pass --token TOKEN (visible in ps).
 set -euo pipefail
 
+printf '%s\n' \
+  'Warning: execute-code.sh is deprecated.' \
+  'With marimo 0.26 or newer, use `marimo pair execute`.' >&2
+
 usage() {
   echo "Usage: execute-code.sh --url URL [--file PATH | --session ID] -c 'code'" >&2
   echo "       execute-code.sh --url URL [--file PATH | --session ID] -" >&2
