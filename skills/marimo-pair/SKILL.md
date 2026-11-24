@@ -90,6 +90,10 @@ Work becomes part of the user’s notebook when you create or edit a cell
 through Code Mode. The user can rerun the code, see the result, and discuss
 it with you.
 
+**Notebook rules.** Each public name can be defined in only one cell. Names
+like `_x` are local to their cell. Cells cannot form dependency cycles or
+use wildcard imports (`from module import *`).
+
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
 import marimo._code_mode as cm
