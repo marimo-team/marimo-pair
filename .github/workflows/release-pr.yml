@@ -1,3 +1,4 @@
+run-name: "Release ${{ inputs.version }} requested by @${{ github.actor }}"
 name: Prepare release PR
 on:
   workflow_dispatch:
@@ -46,3 +47,17 @@ jobs:
           PR_URL: ${{ steps.pr.outputs.url }}
         run: |
           echo "$PR_URL" >> "$GITHUB_STEP_SUMMARY"
+
+  notify-approval:
+    name: Notify release approval
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      actions: read
+      pull-requests: read
+      contents: read
+    steps:
+      - uses: marimo-team/internal-gh-actions/release-approval-notification@962bf922f5b45dba9a650de62f825c24f3e99f87
+        with:
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_RELEASES }}
