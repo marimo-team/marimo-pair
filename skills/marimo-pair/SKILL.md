@@ -89,7 +89,6 @@ PYTHON
 Work becomes part of the user’s notebook when you create or edit a cell
 through Code Mode. The user can rerun the code, see the result, and discuss
 it with you.
-[How variable names work across cells](reference/gotchas.md#redefining-a-public-name-across-cells).
 
 ```sh
 marimo pair execute --notebook nb-analysis --file - <<'PYTHON'
