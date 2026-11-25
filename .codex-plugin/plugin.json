@@ -1,6 +1,6 @@
 {
   "name": "marimo-pair",
-  "version": "0.0.20",
+  "version": "0.1.0",
   "description": "Pair with a coding agent in a live marimo notebook.",
   "author": {
     "name": "marimo-team",
