@@ -1,0 +1,54 @@
+name: Tag merged release
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+permissions: {}
+jobs:
+  tag:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      startsWith(github.event.pull_request.title, 'release: ')
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    environment: release
+    timeout-minutes: 60
+    concurrency:
+      group: release-tag-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Read coordinated version
+        run: |
+          python3 scripts/release-metadata.py > "$RUNNER_TEMP/release-manifest.json"
+      - name: Tag merged release
+        uses: marimo-team/internal-gh-actions/release-tag@3a52681ab8e200a34175ec8e5d14985e4e7ce3c3
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          manifest: .codex-plugin/plugin.json
+
+  notify-approval:
+    name: Notify release approval
+    if: >-
+      github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'release/') && startsWith(github.event.pull_request.title, 'release: ')
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 12
+    permissions:
+      actions: read
+      pull-requests: read
+      contents: read
+    steps:
+      - uses: marimo-team/internal-gh-actions/release-approval-notification@962bf922f5b45dba9a650de62f825c24f3e99f87
+        with:
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_RELEASES }}

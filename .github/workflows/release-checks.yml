@@ -1,0 +1,22 @@
+name: Release checks
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: release-checks-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  release-checks:
+    name: Release checks
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: marimo-team/internal-gh-actions/release-contract@36a2bd9a76109b91c9dc0bc65bfab95c9b632a3b
