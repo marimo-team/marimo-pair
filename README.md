@@ -55,6 +55,20 @@ To opt in to auto-updates (recommended), so you always get the latest version:
 /plugin → Marketplaces → marimo-pair → Enable auto-update
 ```
 
+### OpenCode (HTTP catalog)
+
+Add the catalog URL to your user or project `opencode.jsonc`:
+
+```jsonc
+{
+  "skills": [
+    "https://raw.githubusercontent.com/marimo-team/marimo-pair/main/skills/"
+  ]
+}
+```
+
+OpenCode downloads the skills and refreshes its copies when the catalog version changes.
+
 ## Contributing
 
 We'd love your help in improving this skill. After a marimo pair session,

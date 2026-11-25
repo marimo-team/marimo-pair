@@ -2,7 +2,8 @@
   "repository": "marimo-team/marimo-pair",
   "files": [
     ".codex-plugin/plugin.json",
-    ".claude-plugin/marketplace.json"
+    ".claude-plugin/marketplace.json",
+    "skills/index.json"
   ],
   "command": [
     "./scripts/release.sh"
