@@ -51,7 +51,7 @@ jobs:
   notify-approval:
     name: Notify release approval
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER_SMALL || 'ubuntu-latest' }}
     timeout-minutes: 12
     permissions:
       actions: read
