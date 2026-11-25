@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Pair with a coding agent in a live marimo notebook.",
-    "version": "0.0.20"
+    "version": "0.1.0"
   },
   "plugins": [
     {
