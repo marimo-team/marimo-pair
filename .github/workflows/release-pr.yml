@@ -58,6 +58,6 @@ jobs:
       pull-requests: read
       contents: read
     steps:
-      - uses: marimo-team/internal-gh-actions/release-approval-notification@962bf922f5b45dba9a650de62f825c24f3e99f87
+      - uses: marimo-team/internal-gh-actions/release-approval-notification@0a3db0e04217aaa03b3d011502874b020e9466a3
         with:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL_RELEASES }}
