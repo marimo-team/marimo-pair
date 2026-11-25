@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: marimo-team/internal-gh-actions/release-contract@36a2bd9a76109b91c9dc0bc65bfab95c9b632a3b
+      - uses: marimo-team/internal-gh-actions/release-contract@3c6ddeb4b132541309e3c56bbca8b3605d24ecfd
